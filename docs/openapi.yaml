@@ -1,0 +1,287 @@
+openapi: 3.0.3
+info:
+  title: TripDrip API
+  version: 1.0.0
+  description: REST API specification for TripDrip (Kazakhstan Travel PWA, Qonaq, Map, Gamified Routes, Wallet & Partner Cabinet).
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: INSUFFICIENT_COINS }
+            message: { type: string, example: Not enough coins for this offer }
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      summary: Register user (auto role tourist/local by country_code, or partner)
+      security: []
+      responses:
+        '201': { description: Created with access & refresh tokens }
+  /auth/login:
+    post:
+      summary: Login by email or phone + password
+      security: []
+      responses:
+        '200': { description: Auth tokens & profile }
+  /auth/refresh:
+    post:
+      summary: Refresh JWT token pair
+      security: []
+      responses:
+        '200': { description: New token pair }
+  /me:
+    get:
+      summary: Get current user and profile
+      responses:
+        '200': { description: User profile }
+    delete:
+      summary: Soft-delete account and cascade profile, verification docs, and map presence
+      responses:
+        '200': { description: Deleted }
+  /me/profile:
+    patch:
+      summary: Update profile (hobbies, languages, trip dates, vibe, networking/hosting flags)
+      responses:
+        '200': { description: Updated profile }
+  /verifications:
+    post:
+      summary: Submit mock KYC verification (passport or 12-digit KZ IIN)
+      responses:
+        '201': { description: Verification submitted }
+  /verifications/me:
+    get:
+      summary: Get latest verification status
+      responses:
+        '200': { description: Verification status }
+  /map/entities:
+    get:
+      summary: List visible verified people (city/district centroids only) and approved partner branches
+      parameters:
+        - in: query
+          name: layer
+          schema: { type: string, enum: [tourists, locals_networking, locals_hosting, partners] }
+        - in: query
+          name: city
+          schema: { type: string }
+        - in: query
+          name: hobby
+          schema: { type: string }
+        - in: query
+          name: language
+          schema: { type: string }
+        - in: query
+          name: vibe
+          schema: { type: string, enum: [nature, megapolis, both] }
+        - in: query
+          name: country
+          schema: { type: string }
+      responses:
+        '200': { description: Map entities }
+  /me/map-presence:
+    patch:
+      summary: Toggle map visibility and resolve city/district centroid
+      responses:
+        '200': { description: Map presence updated }
+  /network-requests:
+    get:
+      summary: List incoming and outgoing networking requests
+      responses:
+        '200': { description: Networking requests }
+    post:
+      summary: Send networking request
+      responses:
+        '201': { description: Created }
+  /network-requests/{id}/respond:
+    post:
+      summary: Accept or decline networking request (creates chat on accept)
+      responses:
+        '200': { description: Responded }
+  /qonaq/requests:
+    post:
+      summary: Create Qonaq help request (tourist only, max 3 active)
+      responses:
+        '201': { description: Created }
+  /qonaq/feed:
+    get:
+      summary: Get open Qonaq feed for locals
+      responses:
+        '200': { description: Feed items }
+  /qonaq/requests/me:
+    get:
+      summary: List my Qonaq requests
+      responses:
+        '200': { description: User Qonaq requests }
+  /qonaq/requests/{id}/responses:
+    get:
+      summary: List accepted local responses for a Qonaq request
+      responses:
+        '200': { description: Responses }
+  /qonaq/requests/{id}/respond:
+    post:
+      summary: Local accepts or declines Qonaq request
+      responses:
+        '200': { description: Responded }
+  /qonaq/requests/{id}/select-host:
+    post:
+      summary: Tourist selects a host and opens Qonaq chat
+      responses:
+        '200': { description: Host selected and chat created }
+  /qonaq/requests/{id}/confirm:
+    post:
+      summary: Confirm Qonaq completion (mutual confirmation awards +30 coins to local)
+      responses:
+        '200': { description: Confirmation state }
+  /qonaq/requests/{id}/reviews:
+    post:
+      summary: Leave 1-5 star review after completed Qonaq request
+      responses:
+        '201': { description: Review created and rating recalculated }
+  /chats:
+    get:
+      summary: List user chats (Qonaq and networking)
+      responses:
+        '200': { description: Chats }
+  /chats/{id}/messages:
+    get:
+      summary: List chat messages (cursor pagination)
+      responses:
+        '200': { description: Messages }
+    post:
+      summary: Send chat message (auto commercial spam scanner)
+      responses:
+        '201': { description: Message sent }
+  /routes/generate:
+    post:
+      summary: Generate unique A->B route with 3-5 stops
+      responses:
+        '201': { description: Route generated }
+  /routes/active:
+    get:
+      summary: Get active user route with stops
+      responses:
+        '200': { description: Active route }
+  /routes/{id}/stops/{pointId}/checkin:
+    post:
+      summary: Anti-fraud GPS check-in at route stop (+10 landmark, +20 partner, +30 route bonus)
+      responses:
+        '200': { description: Check-in recorded and coins awarded }
+  /wallet:
+    get:
+      summary: Get coin balance and transaction ledger
+      responses:
+        '200': { description: Wallet summary }
+  /offers:
+    get:
+      summary: List active partner offers
+      security: []
+      responses:
+        '200': { description: Offers }
+  /offers/{id}/exchange:
+    post:
+      summary: Atomically exchange coins for single-use QR promo code
+      responses:
+        '201': { description: Promo code created }
+  /promocodes/me:
+    get:
+      summary: List user promo codes
+      responses:
+        '200': { description: User promo codes }
+  /partner/profile:
+    get:
+      summary: Get partner brand, locations, and offers
+      responses:
+        '200': { description: Partner profile }
+    post:
+      summary: Create partner brand profile
+      responses:
+        '201': { description: Partner profile created }
+  /partner/locations:
+    post:
+      summary: Add partner branch location and synced map point
+      responses:
+        '201': { description: Location created }
+  /partner/offers:
+    post:
+      summary: Create discount offer
+      responses:
+        '201': { description: Offer created }
+  /partner/promocodes/redeem:
+    post:
+      summary: Atomically redeem user QR promo code at a branch
+      responses:
+        '200': { description: Redeemed }
+  /partner/visits/confirm:
+    post:
+      summary: Confirm guest visit at partner branch (+20 coins, once per brand per day)
+      responses:
+        '200': { description: Visit confirmed }
+  /partner/stats:
+    get:
+      summary: Partner analytics by branch and guest country
+      responses:
+        '200': { description: Stats }
+  /reports:
+    post:
+      summary: Report a user (3 unique open reports trigger auto-hide on map)
+      responses:
+        '201': { description: Report filed }
+  /blocks:
+    get:
+      summary: List blocked users
+      responses:
+        '200': { description: Blocked users }
+    post:
+      summary: Block a user
+      responses:
+        '201': { description: Blocked }
+  /blocks/{userId}:
+    delete:
+      summary: Unblock a user
+      responses:
+        '200': { description: Unblocked }
+  /admin/verifications:
+    get:
+      summary: List pending verification queue
+      responses:
+        '200': { description: Pending verifications }
+  /admin/verifications/{id}/review:
+    post:
+      summary: Approve or reject verification and clear photo URLs to NULL
+      responses:
+        '200': { description: Reviewed }
+  /admin/reports:
+    get:
+      summary: List open reports queue
+      responses:
+        '200': { description: Open reports }
+  /admin/reports/{id}/resolve:
+    post:
+      summary: Resolve or dismiss report with optional user ban
+      responses:
+        '200': { description: Resolved }
+  /admin/partners:
+    get:
+      summary: List pending partner approval queue
+      responses:
+        '200': { description: Pending partners }
+  /admin/partners/{id}/approve:
+    post:
+      summary: Approve partner brand
+      responses:
+        '200': { description: Partner approved }
