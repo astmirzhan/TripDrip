@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tripdrip_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tripdrip}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tripdrip_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-tripdrip}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tripdrip} -d ${POSTGRES_DB:-tripdrip}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tripdrip_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-tripdrip}:${POSTGRES_PASSWORD:-tripdrip_secret}@postgres:5432/${POSTGRES_DB:-tripdrip}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-dev-super-secret-change-in-production-32chars}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-168h}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      AUTO_MIGRATE: ${AUTO_MIGRATE:-true}
+      RUN_SEED: ${RUN_SEED:-false}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+
+volumes:
+  postgres_data:

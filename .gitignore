@@ -1,0 +1,62 @@
+# Environment files (never commit real secrets)
+.env
+**/.env
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+
+# Go binaries, build artifacts, test & coverage outputs
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.txt
+coverage.html
+bin/
+backend/bin/
+dist/
+build/
+vendor/
+
+# IDE & Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs & temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# Docker local volumes / overrides
+docker-compose.override.yml
+postgres_data/
+
+# Frontend / Node (for upcoming PWA workspace)
+node_modules/
+.next/
+.vite/
+.turbo/
+
+# Agent / AI workspace metadata
+.gemini/
