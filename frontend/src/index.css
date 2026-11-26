@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+/* Design tokens from the Figma file "ninja-turtles" → page "TripDrip" (K7 v2 style). */
+@theme {
+  --color-white: #ffffff;
+  --color-ink: #2e1b5b;
+  --color-ink-soft: #5b4a8a;
+  --color-yellow: #ffc803;
+  --color-yellow-dark: #c99a00;
+  --color-mist: #f3f5ff;
+  --color-lilac: #c9d2f7;
+  --color-moss: #7fbf5e;
+  --color-leaf: #4c8c4a;
+  --color-grass: #a6d86a;
+  --color-forest: #2f6b45;
+  --color-forest-dark: #24543a;
+  --color-wood: #8a5a3b;
+  --color-wood-dark: #5e3b25;
+  --color-cream: #fff6d6;
+  --color-mint: #e6f4da;
+  --color-locked: #c9d3f5;
+  --color-sky-blue: #a8b9ee;
+  --color-link-blue: #4f6bd8;
+  --color-danger: #d9452b;
+  --color-danger-soft: #ffe3dc;
+  --color-sea: #3fb8d0;
+  --color-lake: #2a8fb0;
+  --color-sand: #e9d9a6;
+
+  --font-display: 'Jersey 10', 'Tiny5', system-ui, sans-serif;
+  --font-body: 'Pixelify Sans', 'Tiny5', system-ui, sans-serif;
+  --font-cyr: 'Tiny5', 'Pixelify Sans', system-ui, sans-serif;
+
+  --shadow-panel: 0 8px 0 0 #2e1b5b;
+  --shadow-card: 0 4px 0 0 #2e1b5b;
+  --shadow-button: 0 6px 0 0 #2e1b5b, inset 0 4px 0 0 rgba(255, 255, 255, 0.6);
+  --shadow-button-pressed: 0 2px 0 0 #2e1b5b, inset 0 4px 0 0 rgba(255, 255, 255, 0.6);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: #8fa4e7;
+  }
+
+  img {
+    image-rendering: pixelated;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-link-blue);
+    outline-offset: 2px;
+  }
+}
+
+/* Section label: Pixelify Sans Bold 14 / 1.2, tracking 0.84px, uppercase (K7v2/Label). */
+@utility label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+  letter-spacing: 0.84px;
+  text-transform: uppercase;
+}
