@@ -96,7 +96,7 @@ function MapScreen() {
 
   return (
     <div className="flex flex-col gap-[20px] lg:flex-row lg:items-start">
-      <Panel className="w-full gap-[6px] p-[18px] lg:w-[250px]">
+      <Panel className="w-full gap-[6px] p-[18px] lg:w-[230px] lg:shrink-0">
         <Switch checked={visible} onChange={toggleVisible} disabled={presence.isPending}>
           SHOW ME ON MAP
         </Switch>
@@ -137,7 +137,7 @@ function MapScreen() {
         <p className="font-body text-[16px] text-ink-soft">Shown by region, never exact spot.</p>
       </Panel>
 
-      <div className="min-w-0 flex-1 lg:max-w-[640px]">
+      <div className="min-w-0 flex-1">
         <KazakhstanMap
           counts={counts}
           selected={city}
@@ -151,7 +151,7 @@ function MapScreen() {
         {entities.error && <Notice className="mt-[12px]">{errorMessage(entities.error)}</Notice>}
       </div>
 
-      <div className="w-full lg:w-[430px]">
+      <div className="w-full lg:w-[360px] lg:shrink-0">
         {openPerson ? (
           <PersonCard person={openPerson} cityCount={inCity.length} onBack={() => setOpenPerson(null)} />
         ) : (
