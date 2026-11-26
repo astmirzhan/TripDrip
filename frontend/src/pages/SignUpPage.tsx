@@ -9,6 +9,7 @@ import { Input, Select } from '../components/ui/Field'
 import { Icon } from '../components/ui/Icon'
 import { Notice, Panel } from '../components/ui/Panel'
 import { Checkbox } from '../components/ui/Toggle'
+import { cn } from '../lib/cn'
 import { CITIES, COUNTRIES } from '../lib/data'
 
 const contact = (value: string) => (value.includes('@') ? { email: value.trim() } : { phone: value.replace(/[\s()-]/g, '') })
@@ -60,7 +61,7 @@ export function SignUpPage({ mode }: { mode: 'signup' | 'login' }) {
 
   return (
     <SceneScreen sprites={[{ kind: 'yurt', x: 70 }, { kind: 'baiterek', x: 1250 }]}>
-      <Panel className="w-full max-w-[640px] gap-[16px] p-[20px] sm:p-[28px]">
+      <Panel className={cn('w-full gap-[16px] p-[20px] sm:p-[28px]', isSignup ? 'max-w-[640px]' : 'max-w-[460px]')}>
         <form onSubmit={submit} className="flex flex-col gap-[16px]">
           <h1 className="text-center font-display text-[44px] leading-none text-ink sm:text-[52px]">
             {isSignup ? 'create account' : 'welcome back'}
@@ -99,7 +100,7 @@ export function SignUpPage({ mode }: { mode: 'signup' | 'login' }) {
               </div>
             </>
           )}
-          <div className="grid grid-cols-1 gap-[16px] sm:grid-cols-2">
+          <div className={cn('grid grid-cols-1 gap-[16px]', isSignup && 'sm:grid-cols-2')}>
             <Input
               label="EMAIL OR PHONE"
               placeholder="emma.laurent@mail.fr"
@@ -125,7 +126,7 @@ export function SignUpPage({ mode }: { mode: 'signup' | 'login' }) {
             </Checkbox>
           )}
           {error && <Notice>{error}</Notice>}
-          <div className="flex flex-wrap items-center justify-center gap-[16px] pt-[6px]">
+          <div className={cn('flex items-center justify-center gap-[16px] pt-[6px]', isSignup ? 'flex-wrap' : 'flex-col')}>
             <Button type="submit" loading={busy}>
               {isSignup ? 'create account' : 'sign in'}
             </Button>
