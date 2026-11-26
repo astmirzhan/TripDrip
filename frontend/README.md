@@ -64,3 +64,8 @@ npm run dev      # dev server
 npm run build    # type-check + production build
 npm run lint     # oxlint
 ```
+
+## Deploy
+
+- **Frontend → Vercel.** Import the repo, set *Root Directory* to `frontend`. `vercel.json` adds SPA rewrites and asset caching. Environment variable: `VITE_API_URL=https://api.tripdrip.macintsh.tech/api/v1`. Domain: `tripdrip.macintsh.tech`.
+- **Backend → Railway.** Service from this repo with *Root Directory* `backend` (uses `backend/Dockerfile`, port 8080) plus a Railway Postgres. Variables: `DATABASE_URL` (from Postgres), `JWT_SECRET`, `SERVER_PORT=8080`, `AUTO_MIGRATE=true`, `RUN_SEED=true` (demo data), `CORS_ORIGINS=https://tripdrip.macintsh.tech`. Domain: `api.tripdrip.macintsh.tech`.
