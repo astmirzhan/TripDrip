@@ -333,6 +333,47 @@ export interface NetworkRequest {
   responded_at: string | null
 }
 
+export interface NetworkRequestRow extends NetworkRequest {
+  sender_first_name: string
+  sender_last_name: string
+  sender_avatar_url: string | null
+  receiver_first_name: string
+  receiver_last_name: string
+  receiver_avatar_url: string | null
+}
+
+export type ChatContext = 'qonaq' | 'networking'
+
+export interface Chat {
+  id: string
+  context_type: ChatContext
+  help_request_id: string | null
+  network_request_id: string | null
+  user1_id: string
+  user2_id: string
+  created_at: string
+}
+
+export interface ChatSummary extends Chat {
+  user1_first_name: string
+  user1_last_name: string
+  user1_avatar_url: string | null
+  user2_first_name: string
+  user2_last_name: string
+  user2_avatar_url: string | null
+  last_message: string
+  last_message_at: string
+}
+
+export interface Message {
+  id: string
+  chat_id: string
+  sender_id: string
+  body: string
+  flagged_commercial: boolean
+  created_at: string
+}
+
 export interface Items<T> {
   items: T[]
 }

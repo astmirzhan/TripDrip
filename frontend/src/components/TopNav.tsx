@@ -14,6 +14,7 @@ const LINKS = [
   { to: '/qonaq', label: 'ҚОНАҚ', cyr: true },
   { to: '/map', label: 'MAP' },
   { to: '/route', label: 'ROUTE' },
+  { to: '/chats', label: 'CHATS' },
 ]
 
 const ROLE_LABEL = { tourist: 'GUEST', local: 'LOCAL', partner: 'PARTNER', admin: 'ADMIN' } as const

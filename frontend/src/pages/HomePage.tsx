@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { errorMessage } from '../api/client'
 import { useActiveRoute, useConfirmQonaq, useMyQonaqRequests, useQonaqFeed, useQonaqResponses, useSelectHost, useWallet } from '../api/hooks'
 import type { HelpRequest } from '../api/types'
@@ -15,6 +16,7 @@ const MAX_OPEN = 3
 const isOpen = (r: HelpRequest) => r.status === 'open' || r.status === 'has_responses' || r.status === 'matched'
 
 function Responders({ request }: { request: HelpRequest }) {
+  const navigate = useNavigate()
   const responses = useQonaqResponses(request.id)
   const select = useSelectHost()
   const accepted = (responses.data ?? []).filter((r) => r.decision === 'accepted')
@@ -26,7 +28,9 @@ function Responders({ request }: { request: HelpRequest }) {
           <span className="font-body text-[16px] text-ink">
             {r.first_name} · {r.qonaq_completed_count}× helped
           </span>
-          <Chip selected onClick={() => select.mutate({ requestId: request.id, localId: r.local_id })} disabled={select.isPending}>
+          <Chip selected onClick={() =>
+              select.mutate({ requestId: request.id, localId: r.local_id }, { onSuccess: (res) => navigate(`/chats/${res.chat.id}`) })
+            } disabled={select.isPending}>
             PICK
           </Chip>
         </div>
@@ -51,9 +55,11 @@ function RequestRow({ request }: { request: HelpRequest }) {
     )
   } else if (request.status === 'matched') {
     const confirmed = request.tourist_confirmed_done
-    chip = (
-      <Chip selected={!confirmed} disabled={confirmed || confirm.isPending} onClick={() => confirm.mutate(request.id)}>
-        {confirmed ? 'WAITING' : 'MARK DONE'}
+    chip = confirmed ? (
+      <Tag>WAITING</Tag>
+    ) : (
+      <Chip selected disabled={confirm.isPending} onClick={() => confirm.mutate(request.id)}>
+        MARK DONE
       </Chip>
     )
   } else if (request.status === 'completed') {

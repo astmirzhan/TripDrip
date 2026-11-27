@@ -9,14 +9,16 @@ import (
 )
 
 type Config struct {
-	ServerPort     string
-	DatabaseURL    string
-	JWTSecret      string
-	JWTAccessTTL   time.Duration
-	JWTRefreshTTL  time.Duration
-	CORSOrigins    []string
-	AutoMigrate    bool
-	RunSeed        bool
+	ServerPort    string
+	DatabaseURL   string
+	JWTSecret     string
+	JWTAccessTTL  time.Duration
+	JWTRefreshTTL time.Duration
+	CORSOrigins   []string
+	AutoMigrate   bool
+	RunSeed       bool
+	// AutoApproveVerification approves new verifications immediately (demo mode, no moderator needed).
+	AutoApproveVerification bool
 }
 
 func Load() (*Config, error) {
@@ -29,6 +31,8 @@ func Load() (*Config, error) {
 		CORSOrigins:   parseCSV(getEnv("CORS_ORIGINS", "*")),
 		AutoMigrate:   getBool("AUTO_MIGRATE", true),
 		RunSeed:       getBool("RUN_SEED", false),
+
+		AutoApproveVerification: getBool("AUTO_APPROVE_VERIFICATION", false),
 	}
 
 	if cfg.DatabaseURL == "" {

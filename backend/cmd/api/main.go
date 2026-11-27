@@ -76,6 +76,10 @@ func main() {
 
 	authSvc := service.NewAuthService(pool, queries, tokens)
 	verSvc := service.NewVerificationService(queries)
+	if cfg.AutoApproveVerification {
+		verSvc.WithAutoApprove(pool)
+		slog.Info("verification auto-approve is ON (demo mode)")
+	}
 	mapSvc := service.NewMapService(queries)
 	partnerSvc := service.NewPartnerService(pool, queries)
 	routeSvc := service.NewRouteService(pool, queries)
