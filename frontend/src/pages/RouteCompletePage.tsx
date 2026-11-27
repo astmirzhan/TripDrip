@@ -11,7 +11,8 @@ import { Chip } from '../components/ui/Chip'
 import { Coin } from '../components/ui/Coin'
 import { Eyebrow, Notice, Panel } from '../components/ui/Panel'
 import { Sign } from '../components/ui/Sign'
-import { shortDate } from '../lib/data'
+import { useI18n } from '../i18n'
+import { dateText } from '../lib/labels'
 
 interface CompleteState {
   bonus: number
@@ -28,16 +29,17 @@ const COINS = [
 ]
 
 function PromoBox({ promo }: { promo: MyPromoCode }) {
+  const { t, locale } = useI18n()
   return (
     <div className="flex w-full items-center gap-[14px] rounded-[12px] border-3 border-ink bg-mist p-[14px]">
       <QRCodeSVG value={promo.code} size={84} bgColor="#f3f5ff" fgColor="#2e1b5b" level="M" className="shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-        <Eyebrow>YOUR CODE</Eyebrow>
+        <Eyebrow>{t('wallet.yourCode')}</Eyebrow>
         <p className="font-body text-[18px] font-bold text-ink">
-          {promo.discount_percent}% off at {promo.brand_name}
+          {t('wallet.offAt', { p: promo.discount_percent, brand: promo.brand_name })}
         </p>
         <p className="font-body text-[16px] text-ink-soft">
-          {promo.code} · one use · until {shortDate(promo.expires_at)}
+          {t('wallet.codeMeta', { code: promo.code, date: dateText(locale, promo.expires_at) })}
         </p>
       </div>
     </div>
@@ -47,12 +49,13 @@ function PromoBox({ promo }: { promo: MyPromoCode }) {
 function GuestCard({ userId, name }: { userId: string; name: string }) {
   const [show, setShow] = useState(false)
   const value = `tripdrip:guest:${userId}`
+  const { t } = useI18n()
   return (
     <div className="flex w-full flex-col gap-[8px] rounded-[12px] border-3 border-ink bg-cream p-[14px]">
       <div className="flex items-center justify-between gap-[8px]">
-        <Eyebrow>YOUR TRIPDRIP CARD</Eyebrow>
+        <Eyebrow>{t('wallet.card')}</Eyebrow>
         <Chip selected={show} onClick={() => setShow((v) => !v)}>
-          {show ? 'HIDE' : 'SHOW AT THE COUNTER'}
+          {show ? t('wallet.hide') : t('wallet.showCounter')}
         </Chip>
       </div>
       {show ? (
@@ -60,11 +63,11 @@ function GuestCard({ userId, name }: { userId: string; name: string }) {
           <QRCodeSVG value={value} size={120} bgColor="#fff6d6" fgColor="#2e1b5b" level="M" className="shrink-0" />
           <div className="flex min-w-0 flex-col gap-[4px]">
             <p className="font-display text-[28px] leading-none text-ink">{name}</p>
-            <p className="font-body text-[15px] text-ink-soft">Partner scans it to confirm your visit: +20 coins, once a day per brand.</p>
+            <p className="font-body text-[15px] text-ink-soft">{t('wallet.cardScan')}</p>
           </div>
         </div>
       ) : (
-        <p className="font-body text-[15px] text-ink-soft">At a partner café or shop without a promo code? Show this card and get +20 coins.</p>
+        <p className="font-body text-[15px] text-ink-soft">{t('wallet.cardHint')}</p>
       )}
     </div>
   )
@@ -73,24 +76,23 @@ function GuestCard({ userId, name }: { userId: string; name: string }) {
 function OfferPicker({ balance }: { balance: number }) {
   const offers = useOffers()
   const exchange = useExchangeOffer()
+  const { t } = useI18n()
   const list = (offers.data ?? []).filter((o) => o.remaining_limit > 0).sort((a, b) => a.coin_cost - b.coin_cost).slice(0, 4)
   return (
     <div className="flex w-full flex-col gap-[8px] rounded-[12px] border-3 border-ink bg-mist p-[14px]">
-      <Eyebrow>SWAP COINS FOR A CODE</Eyebrow>
+      <Eyebrow>{t('wallet.swap')}</Eyebrow>
       {list.map((o) => (
         <div key={o.id} className="flex items-center justify-between gap-[10px]">
           <p className="min-w-0 flex-1 font-body text-[16px] text-ink">
-            <span className="font-bold">
-              {o.discount_percent}% off at {o.brand_name}
-            </span>{' '}
-            · {o.coin_cost} coins
+            <span className="font-bold">{t('wallet.offAt', { p: o.discount_percent, brand: o.brand_name })}</span> ·{' '}
+            {t('wallet.cost', { n: o.coin_cost })}
           </p>
           <Chip selected disabled={o.coin_cost > balance || exchange.isPending} onClick={() => exchange.mutate(o.id)}>
-            GET
+            {t('wallet.get')}
           </Chip>
         </div>
       ))}
-      {offers.isSuccess && list.length === 0 && <p className="font-body text-[16px] text-ink-soft">No offers right now.</p>}
+      {offers.isSuccess && list.length === 0 && <p className="font-body text-[16px] text-ink-soft">{t('wallet.noOffers')}</p>}
       {exchange.error && <Notice>{errorMessage(exchange.error)}</Notice>}
     </div>
   )
@@ -104,19 +106,20 @@ export function RouteCompletePage() {
   const [shared, setShared] = useState('')
   const balance = wallet.data?.balance ?? 0
   const { user } = useAuth()
+  const { t } = useI18n()
   const active = (promos.data ?? []).filter((p) => p.status === 'active')
 
   async function share() {
     const text = state
-      ? `I finished ${state.from} → ${state.to} on TripDrip and got +${state.bonus} coins!`
-      : `I have ${balance} coins on TripDrip.`
+      ? t('wallet.shareRoute', { from: state.from, to: state.to, n: state.bonus })
+      : t('wallet.shareBalance', { n: balance })
     try {
       if (navigator.share) {
         await navigator.share({ text })
-        setShared('Shared.')
+        setShared(t('wallet.shared'))
       } else {
         await navigator.clipboard.writeText(text)
-        setShared('Copied.')
+        setShared(t('wallet.copied'))
       }
     } catch {
       // The person closed the share sheet.
@@ -138,14 +141,14 @@ export function RouteCompletePage() {
       ))}
       <Panel className="w-full max-w-[560px] items-center gap-[14px] p-[20px] sm:p-[28px]">
         <h1 className="text-center font-display text-[48px] leading-none text-ink sm:text-[64px]">
-          {state ? 'route complete!' : 'your coins'}
+          {state ? t('wallet.complete') : t('wallet.yourCoins')}
         </h1>
         {state && (
           <Eyebrow className="text-center">
-            {state.from} → {state.to} · {state.stops} STOPS
+            {t('wallet.stops', { from: state.from, to: state.to, n: state.stops })}
           </Eyebrow>
         )}
-        <Sign value={state ? `+${state.bonus}` : balance} caption={state ? 'BONUS COINS' : 'COINS'} scale={1.6} />
+        <Sign value={state ? `+${state.bonus}` : balance} caption={(state ? t('wallet.bonusCoins') : t('wallet.coins')).toUpperCase()} scale={1.6} />
         {active.map((p) => (
           <PromoBox key={p.id} promo={p} />
         ))}
@@ -154,9 +157,9 @@ export function RouteCompletePage() {
         {shared && <Notice tone="ok">{shared}</Notice>}
         <div className="flex flex-wrap justify-center gap-[16px]">
           <Button variant="secondary" onClick={share}>
-            share card
+            {t('wallet.share')}
           </Button>
-          <ButtonLink to="/route">{state ? 'next route' : 'back to route'}</ButtonLink>
+          <ButtonLink to="/route">{state ? t('wallet.nextRoute') : t('wallet.backRoute')}</ButtonLink>
         </div>
       </Panel>
     </SceneScreen>

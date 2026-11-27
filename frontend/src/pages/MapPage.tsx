@@ -12,17 +12,14 @@ import { Notice, Panel } from '../components/ui/Panel'
 import { Switch } from '../components/ui/Toggle'
 import { VerifyGate } from '../components/VerifyGate'
 import { cn } from '../lib/cn'
-import { countryName } from '../lib/data'
 import { KazakhstanMap } from './map/KazakhstanMap'
 import { PersonCard } from './map/PersonCard'
+import { useI18n, type Lang, type T } from '../i18n'
+import { cityLabel, countryLabel } from '../lib/places'
+import { hobbyLabel } from '../lib/labels'
 
 type Layer = 'guests' | 'locals' | 'hosts' | 'partners'
-const LAYERS: Array<{ value: Layer; label: string }> = [
-  { value: 'guests', label: 'GUESTS' },
-  { value: 'locals', label: 'LOCALS' },
-  { value: 'hosts', label: 'CAN HOST' },
-  { value: 'partners', label: 'PARTNERS' },
-]
+const LAYERS: Layer[] = ['guests', 'locals', 'hosts', 'partners']
 const HOBBY_FILTERS = ['HIKING', 'FOOTBALL', 'PHOTOGRAPHY', 'LOCAL FOOD']
 const LANGUAGE_FILTERS = ['EN', 'FR', 'DE', 'RU']
 const VISIBLE_KEY = 'tripdrip.map.visible'
@@ -35,13 +32,18 @@ function matchesLayer(p: MapPerson, layers: Layer[]) {
   return false
 }
 
-function personLine(p: MapPerson) {
+function personLine(p: MapPerson, t: T, lang: Lang) {
   if (p.role === 'local') {
-    return ['local', p.can_host_guests && 'can host', p.rating_count > 0 ? `rated ${Number(p.rating_avg).toFixed(1)}` : 'new', p.qonaq_completed_count > 0 && `helped ${p.qonaq_completed_count}×`]
+    return [
+      t('map.local'),
+      p.can_host_guests && t('map.canHost'),
+      p.rating_count > 0 ? t('map.rated', { r: Number(p.rating_avg).toFixed(1) }) : t('map.new'),
+      p.qonaq_completed_count > 0 && t('map.helped', { n: p.qonaq_completed_count }),
+    ]
       .filter(Boolean)
       .join(' · ')
   }
-  return `guest · ${countryName(p.country_code)}`
+  return t('map.guest', { country: countryLabel(p.country_code, lang) })
 }
 
 function MapScreen() {
@@ -49,6 +51,7 @@ function MapScreen() {
   const entities = useMapEntities({})
   const presence = useUpdatePresence()
   const sayHi = useSendNetworkRequest()
+  const { t, lang } = useI18n()
 
   const [visible, setVisible] = useState(() => localStorage.getItem(VISIBLE_KEY) === 'true')
   const [layers, setLayers] = useState<Layer[]>(['guests', 'locals'])
@@ -98,31 +101,31 @@ function MapScreen() {
     <div className="flex flex-col gap-[20px] lg:flex-row lg:items-start">
       <Panel className="w-full gap-[6px] p-[18px] lg:w-[230px] lg:shrink-0">
         <Switch checked={visible} onChange={toggleVisible} disabled={presence.isPending}>
-          SHOW ME ON MAP
+          {t('map.showMe')}
         </Switch>
-        <p className="label text-ink">SHOW ON MAP</p>
+        <p className="label text-ink">{t('map.showOnMap')}</p>
         <div className="flex flex-wrap gap-[6px] lg:flex-col lg:items-start">
           {LAYERS.map((l) => (
-            <Chip key={l.value} selected={layers.includes(l.value)} onClick={() => toggleLayer(l.value)}>
-              {layers.includes(l.value) ? `✓ ${l.label}` : l.label}
+            <Chip key={l} selected={layers.includes(l)} onClick={() => toggleLayer(l)}>
+              {layers.includes(l) ? `✓ ${t(`map.layer.${l}`)}` : t(`map.layer.${l}`)}
             </Chip>
           ))}
         </div>
-        <p className="label text-ink">HOBBY</p>
+        <p className="label text-ink">{t('map.hobby')}</p>
         <div className="flex flex-wrap gap-[6px]">
           <Chip selected={!hobby} onClick={() => setHobby(null)}>
-            ALL
+            {t('pb.all')}
           </Chip>
           {HOBBY_FILTERS.map((h) => (
             <Chip key={h} selected={hobby === h} onClick={() => setHobby(hobby === h ? null : h)}>
-              {h}
+              {hobbyLabel(t, h)}
             </Chip>
           ))}
         </div>
-        <p className="label text-ink">LANGUAGE</p>
+        <p className="label text-ink">{t('map.language')}</p>
         <div className="flex flex-wrap gap-[6px]">
           <Chip selected={!language} onClick={() => setLanguage(null)}>
-            ANY
+            {t('map.any')}
           </Chip>
           {LANGUAGE_FILTERS.map((l) => (
             <Chip key={l} selected={language === l} onClick={() => setLanguage(language === l ? null : l)}>
@@ -131,10 +134,10 @@ function MapScreen() {
           ))}
         </div>
         <Chip selected={practise} onClick={() => setPractise((v) => !v)} className="self-start">
-          PRACTISE ENGLISH
+          {t('map.practise')}
         </Chip>
         {presence.error && <Notice>{errorMessage(presence.error)}</Notice>}
-        <p className="font-body text-[16px] text-ink-soft">Shown by region, never exact spot.</p>
+        <p className="font-body text-[16px] text-ink-soft">{t('map.region')}</p>
       </Panel>
 
       <div className="min-w-0 flex-1">
@@ -157,7 +160,7 @@ function MapScreen() {
         ) : (
           <Panel className="gap-[10px] p-[18px]">
             <p className="label text-ink">
-              {city.toUpperCase()} · {Math.min(shown, inCity.length)} OF {inCity.length} SHOWN
+              {t('map.shown', { city: cityLabel(city, lang).toUpperCase(), n: Math.min(shown, inCity.length), total: inCity.length })}
             </p>
             {inCity.slice(0, shown).map((p) => {
               const isHighlighted = p.user_id === selected?.user_id
@@ -177,36 +180,36 @@ function MapScreen() {
                   <Avatar variant={avatarFor(p.user_id)} size={64} />
                   <div className="flex min-w-0 flex-1 flex-col items-start gap-[4px]">
                     <span className="truncate font-display text-[32px] leading-none text-ink">{p.first_name}</span>
-                    <span className="font-body text-[16px] text-ink-soft">{personLine(p)}</span>
-                    {p.hobbies[0] && <Tag selected>{hobby && p.hobbies.some((h) => h.toUpperCase() === hobby) ? `✓ ${hobby}` : p.hobbies[0].toUpperCase()}</Tag>}
+                    <span className="font-body text-[16px] text-ink-soft">{personLine(p, t, lang)}</span>
+                    {p.hobbies[0] && <Tag selected>{hobby && p.hobbies.some((h) => h.toUpperCase() === hobby) ? `✓ ${hobbyLabel(t, hobby)}` : hobbyLabel(t, p.hobbies[0])}</Tag>}
                   </div>
                 </button>
               )
             })}
             {inCity.length > shown && (
               <Chip className="self-start" onClick={() => setShown((n) => n + PAGE)}>
-                SHOW MORE
+                {t('map.more')}
               </Chip>
             )}
             {partnersInCity.map((p) => (
               <div key={p.location_id} className="flex flex-col gap-[2px] rounded-[12px] border-3 border-ink bg-mist p-[12px]">
                 <span className="font-display text-[26px] leading-none text-ink">{p.brand_name}</span>
                 <span className="font-body text-[16px] text-ink-soft">
-                  {p.branch_name} · +{p.reward_coins} coins
+                  {p.branch_name} · {t('map.coins', { n: p.reward_coins })}
                 </span>
               </div>
             ))}
             {entities.isSuccess && inCity.length === 0 && partnersInCity.length === 0 && (
-              <p className="font-body text-[16px] text-ink-soft">Nobody here yet with these filters.</p>
+              <p className="font-body text-[16px] text-ink-soft">{t('map.nobody')}</p>
             )}
             {sayHi.error && <Notice>{errorMessage(sayHi.error)}</Notice>}
-            {sayHi.isSuccess && <Notice tone="ok">Request sent. The chat opens after they accept.</Notice>}
+            {sayHi.isSuccess && <Notice tone="ok">{t('map.sent')}</Notice>}
             {selected && (
               <Button className="self-start" loading={sayHi.isPending} onClick={() => sayHi.mutate({ receiver_id: selected.user_id })}>
-                say hello
+                {t('map.sayHello')}
               </Button>
             )}
-            <p className="font-body text-[16px] text-ink-soft">Tap a person to open their card.</p>
+            <p className="font-body text-[16px] text-ink-soft">{t('map.tap')}</p>
           </Panel>
         )}
       </div>

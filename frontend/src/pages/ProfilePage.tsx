@@ -16,7 +16,9 @@ import { Input } from '../components/ui/Field'
 import { CheckBadge } from '../components/ui/Icon'
 import { Notice, Panel } from '../components/ui/Panel'
 import { cn } from '../lib/cn'
-import { HOBBIES, LANGUAGES, LEVELS, PURPOSES, levelLabel } from '../lib/data'
+import { HOBBIES, LANGUAGES, LEVELS, PURPOSES } from '../lib/data'
+import { useI18n } from '../i18n'
+import { hobbyLabel, languageName, levelName, purposeLabel } from '../lib/labels'
 
 function VibeCard({ selected, onClick, title, hint, art }: { selected: boolean; onClick: () => void; title: string; hint: string; art: 'nature' | 'metropolis' }) {
   return (
@@ -60,6 +62,7 @@ export function ProfilePage() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const update = useUpdateProfile()
+  const { t } = useI18n()
   const isLocal = user?.role === 'local'
 
   const [purpose, setPurpose] = useState<TripPurpose | undefined>(user?.trip_purpose ?? 'leisure')
@@ -109,64 +112,64 @@ export function ProfilePage() {
     <SceneScreen className="flex-col gap-[28px]" sprites={[{ kind: 'baiterek', x: 1300, width: 83.2 }, { kind: 'yurt', x: 30, width: 115.2 }]}>
       <Panel className="w-full max-w-[1120px] p-[20px] sm:p-[26px]">
         <form onSubmit={save} className="flex flex-col gap-[16px]">
-          <h1 className="text-center font-display text-[44px] leading-none text-ink sm:text-[52px]">{isLocal ? 'about you' : 'your trip'}</h1>
+          <h1 className="text-center font-display text-[44px] leading-none text-ink sm:text-[52px]">{isLocal ? t('profile.aboutYou') : t('profile.yourTrip')}</h1>
           {!user?.is_verified && <StepChips step={3} />}
           <div className="flex flex-col gap-[24px] lg:flex-row">
             <div className="flex min-w-0 flex-1 flex-col gap-[16px]">
               {!isLocal && (
                 <>
                   <div className="flex flex-col gap-[8px]">
-                    <p className="label text-ink">PURPOSE OF VISIT</p>
+                    <p className="label text-ink">{t('profile.purpose')}</p>
                     <div className="flex flex-wrap gap-[8px]">
                       {PURPOSES.map((p) => (
                         <Chip key={p.value} selected={purpose === p.value} onClick={() => setPurpose(p.value)}>
-                          {p.label}
+                          {purposeLabel(t, p.value)}
                         </Chip>
                       ))}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-[16px] sm:grid-cols-2">
-                    <Input label="ARRIVAL" type="date" value={start} onChange={(e) => setStart(e.target.value)} />
-                    <Input label="DEPARTURE" type="date" value={end} min={start || undefined} onChange={(e) => setEnd(e.target.value)} />
+                    <Input label={t('profile.arrival')} type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+                    <Input label={t('profile.departure')} type="date" value={end} min={start || undefined} onChange={(e) => setEnd(e.target.value)} />
                   </div>
                 </>
               )}
               <div className="flex flex-col gap-[8px]">
-                <p className="label text-ink">WHAT PULLS YOU MORE?</p>
+                <p className="label text-ink">{t('profile.pulls')}</p>
                 <div className="flex flex-col gap-[14px] sm:flex-row">
-                  <VibeCard art="nature" title="nature" hint="Charyn, Kolsay, Burabay" selected={vibes.includes('nature')} onClick={() => setVibes((v) => (v.length === 1 && v[0] === 'nature' ? v : toggle(v, 'nature')))} />
-                  <VibeCard art="metropolis" title="metropolis" hint="Astana, Almaty, Shymkent" selected={vibes.includes('metropolis')} onClick={() => setVibes((v) => (v.length === 1 && v[0] === 'metropolis' ? v : toggle(v, 'metropolis')))} />
+                  <VibeCard art="nature" title={t('profile.nature')} hint={t('profile.natureHint')} selected={vibes.includes('nature')} onClick={() => setVibes((v) => (v.length === 1 && v[0] === 'nature' ? v : toggle(v, 'nature')))} />
+                  <VibeCard art="metropolis" title={t('profile.metropolis')} hint={t('profile.metropolisHint')} selected={vibes.includes('metropolis')} onClick={() => setVibes((v) => (v.length === 1 && v[0] === 'metropolis' ? v : toggle(v, 'metropolis')))} />
                 </div>
               </div>
             </div>
             <div className="flex w-full flex-col gap-[16px] lg:w-[420px]">
               <div className="flex flex-col gap-[8px]">
-                <p className="label text-ink">HOBBIES</p>
+                <p className="label text-ink">{t('profile.hobbies')}</p>
                 <div className="flex flex-wrap gap-[8px]">
                   {HOBBIES.map((h) => (
                     <Chip key={h} selected={hobbies.includes(h)} onClick={() => setHobbies((list) => toggle(list, h))}>
-                      {h}
+                      {hobbyLabel(t, h)}
                     </Chip>
                   ))}
                 </div>
               </div>
               <div className="flex flex-col gap-[8px]">
-                <p className="label text-ink">LANGUAGES</p>
+                <p className="label text-ink">{t('profile.languages')}</p>
                 <div className="flex flex-wrap gap-[8px]">
                   {LANGUAGES.map((l) => {
                     const skill = languages.find((s) => s.code === l.code)
                     return (
                       <Chip key={l.code} selected={!!skill} onClick={() => cycleLanguage(l.code)}>
-                        {skill ? `${l.label} · ${levelLabel(skill.level)}` : l.label}
+                        {skill ? `${languageName(t, l.code)} · ${levelName(t, skill.level)}` : languageName(t, l.code)}
                       </Chip>
                     )
                   })}
                 </div>
               </div>
-              <Input label="CITY NOW" placeholder="Almaty" value={city} onChange={(e) => setCity(e.target.value)} />
+              <Input label={t('auth.cityNow')} placeholder={t('profile.cityPlaceholder')} value={city} onChange={(e) => setCity(e.target.value)} />
               <Input
-                label="WHAT YOU HOPE FOR"
-                placeholder="Someone to show me the mountains"
+                label={t('profile.hope')}
+                placeholder={t('profile.hopePlaceholder')}
                 value={expectations}
                 maxLength={240}
                 onChange={(e) => setExpectations(e.target.value)}
@@ -176,13 +179,13 @@ export function ProfilePage() {
           {error && <Notice>{error}</Notice>}
           <div className="flex flex-wrap items-center justify-center gap-[16px]">
             <Button type="submit" loading={update.isPending}>
-              save &amp; enter
+              {t('profile.save')}
             </Button>
             <button type="button" onClick={() => navigate('/home')} className="font-body text-[18px] font-bold text-leaf">
-              skip for now
+              {t('profile.skip')}
             </button>
             <button type="button" onClick={logout} className="font-body text-[18px] font-bold text-danger">
-              sign out
+              {t('profile.signOut')}
             </button>
           </div>
         </form>

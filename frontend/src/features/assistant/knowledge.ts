@@ -1,6 +1,8 @@
 // Offline assistant knowledge base for Kazakhstan. Bundled with the app, works in airplane mode.
 // Answers are general guidance; the app tells people to check official sources when they are online.
 
+import { TOPICS_KK, TOPICS_RU, type TopicText } from './knowledge.locales'
+
 export interface Topic {
   id: string
   title: string
@@ -192,6 +194,16 @@ const normalize = (s: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
+/** Title, chip and steps of a topic in the current language. */
+export function topicText(topic: Topic, lang: 'en' | 'ru' | 'kk'): TopicText {
+  const local = lang === 'ru' ? TOPICS_RU[topic.id] : lang === 'kk' ? TOPICS_KK[topic.id] : undefined
+  return local ?? { title: topic.title, chip: topic.chip, steps: topic.steps }
+}
+
+// Words from the Russian and Kazakh titles also point to the topic, so questions work in all three languages.
+const localWords = (id: string) =>
+  [TOPICS_RU[id], TOPICS_KK[id]].flatMap((t) => (t ? `${t.title} ${t.chip ?? ''}`.toLowerCase().split(/[^\p{L}]+/u) : [])).filter((w) => w.length > 3)
+
 /** Local intent search: scores topics by keyword hits, multi-word keywords count more. */
 export function findTopics(query: string, limit = 3): Topic[] {
   const q = normalize(query)
@@ -199,7 +211,7 @@ export function findTopics(query: string, limit = 3): Topic[] {
   const words = q.split(' ')
   const scored = TOPICS.map((topic) => {
     let score = 0
-    for (const raw of topic.keywords) {
+    for (const raw of [...topic.keywords, ...localWords(topic.id)]) {
       const k = normalize(raw)
       if (k.includes(' ')) {
         if (q.includes(k)) score += 3

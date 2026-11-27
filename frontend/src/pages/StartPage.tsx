@@ -1,6 +1,7 @@
 import { SceneScreen } from '../components/Layout'
 import { ButtonLink } from '../components/ui/Button'
 import { Coin } from '../components/ui/Coin'
+import { useI18n } from '../i18n'
 
 // 01 Start (Figma 157:45). Coin positions are percentages of the 1440 × 810 frame.
 const COINS = [
@@ -11,6 +12,7 @@ const COINS = [
 ]
 
 export function StartPage() {
+  const { t } = useI18n()
   return (
     <SceneScreen
       sprites={[
@@ -29,13 +31,13 @@ export function StartPage() {
       <div className="flex flex-col items-center gap-[12px] text-center">
         <h1 className="font-display text-[88px] leading-none text-ink [text-shadow:0_6px_0_white] sm:text-[150px]">TripDrip</h1>
         <p className="font-body text-[16px] font-bold tracking-[1.08px] text-ink uppercase sm:text-[18px]">
-          Kazakhstan without the language barrier
+          {t('start.tagline')}
         </p>
-        <p className="font-body text-[18px] text-ink sm:text-[20px]">Offline phrases, help from locals, coins for every route.</p>
+        <p className="font-body text-[18px] text-ink sm:text-[20px]">{t('start.sub')}</p>
         <div className="flex flex-wrap justify-center gap-[16px] pt-[16px]">
-          <ButtonLink to="/signup">let’s start</ButtonLink>
+          <ButtonLink to="/signup">{t('start.cta')}</ButtonLink>
           <ButtonLink to="/login" variant="secondary">
-            I have an account
+            {t('start.haveAccount')}
           </ButtonLink>
         </div>
       </div>

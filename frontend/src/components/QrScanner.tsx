@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from './ui/Button'
 import { Notice } from './ui/Panel'
+import { useI18n } from '../i18n'
 
 interface DetectedBarcode {
   rawValue: string
@@ -16,6 +17,7 @@ const Detector = (globalThis as { BarcodeDetector?: BarcodeDetectorCtor }).Barco
 export function QrScanner({ onResult, onClose }: { onResult: (value: string) => void; onClose: () => void }) {
   const video = useRef<HTMLVideoElement>(null)
   const [error, setError] = useState('')
+  const { t } = useI18n()
 
   useEffect(() => {
     if (!Detector) return
@@ -50,21 +52,21 @@ export function QrScanner({ onResult, onClose }: { onResult: (value: string) => 
         }
         void tick()
       })
-      .catch(() => setError('Allow camera access to scan the code.'))
+      .catch(() => setError(t('qr.allow')))
 
     return () => {
       stopped = true
       window.clearTimeout(timer)
       stream?.getTracks().forEach((t) => t.stop())
     }
-  }, [onResult])
+  }, [onResult, t])
 
   return (
     <div className="flex flex-col gap-[10px]">
       <video ref={video} muted playsInline className="aspect-square w-full rounded-[12px] border-3 border-ink bg-ink object-cover" />
       {error && <Notice>{error}</Notice>}
       <Button variant="secondary" onClick={onClose}>
-        close camera
+        {t('qr.close')}
       </Button>
     </div>
   )

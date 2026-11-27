@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react'
 import kzMap from '../../assets/map/kz-pixel-map.svg'
 import { cn } from '../../lib/cn'
 import { MAP_HEIGHT, MAP_WIDTH, project } from './kzProjection'
+import { useI18n, type TKey } from '../../i18n'
+import { cityLabel, countryLabel } from '../../lib/places'
 
 type Side = 'right' | 'left' | 'top' | 'bottom'
 
@@ -56,11 +58,11 @@ const WATER_LABELS = [
 ]
 
 const COUNTRY_LABELS = [
-  { text: 'RUSSIA', lat: 55.75, lng: 62 },
-  { text: 'CHINA', lat: 45.3, lng: 86.6 },
-  { text: 'UZBEKISTAN', lat: 41.6, lng: 61 },
-  { text: 'KYRGYZSTAN', lat: 41.3, lng: 75.4 },
-  { text: 'TURKMENISTAN', lat: 40.8, lng: 55.6 },
+  { text: 'RU', lat: 55.75, lng: 62 },
+  { text: 'CN', lat: 45.3, lng: 86.6 },
+  { text: 'UZ', lat: 41.6, lng: 61 },
+  { text: 'KG', lat: 41.3, lng: 75.4 },
+  { text: 'TM', lat: 40.8, lng: 55.6 },
 ]
 
 const at = (lat: number, lng: number): CSSProperties => {
@@ -79,6 +81,7 @@ const LABEL_POS: Record<Side, string> = {
 const HALO = '[text-shadow:1px_0_0_#fff,-1px_0_0_#fff,0_1px_0_#fff,0_-1px_0_#fff]'
 
 export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<string, number>; selected: string; onSelect: (city: string) => void }) {
+  const { t, lang } = useI18n()
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
   const known = new Set(CITIES.map((c) => c.key))
   const elsewhere = Object.entries(counts)
@@ -88,12 +91,12 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
   return (
     <section className="flex flex-col gap-[10px] rounded-[18px] border-4 border-ink bg-white p-[14px] shadow-panel sm:p-[18px]">
       <div className="label flex flex-wrap items-center justify-between gap-[6px] text-ink">
-        <p>KAZAKHSTAN · {total} PEOPLE ONLINE</p>
-        <p className="text-[12px] tracking-[0.72px] text-ink-soft">TAP A CITY TO SEE WHO IS THERE</p>
+        <p>{t('map.online', { n: total })}</p>
+        <p className="text-[12px] tracking-[0.72px] text-ink-soft">{t('map.tapCity')}</p>
       </div>
 
       <div className="relative w-full overflow-hidden rounded-[10px] border-3 border-ink" style={{ aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}>
-        <img src={kzMap} alt="Map of Kazakhstan" className="absolute inset-0 h-full w-full" draggable={false} />
+        <img src={kzMap} alt={t('map.alt')} className="absolute inset-0 h-full w-full" draggable={false} />
 
         {COUNTRY_LABELS.map((l) => (
           <span
@@ -101,7 +104,7 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
             className="pointer-events-none absolute hidden -translate-x-1/2 -translate-y-1/2 font-body text-[12px] font-bold tracking-[3px] text-ink-soft/80 sm:block"
             style={at(l.lat, l.lng)}
           >
-            {l.text}
+            {countryLabel(l.text, lang).toUpperCase()}
           </span>
         ))}
 
@@ -111,7 +114,7 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
             className="pointer-events-none absolute hidden -translate-x-1/2 -translate-y-1/2 font-body text-[11px] font-bold whitespace-nowrap text-[#17647d] md:block"
             style={at(l.lat, l.lng)}
           >
-            {l.text}
+            {t(`geo.${l.text}` as TKey)}
           </span>
         ))}
 
@@ -125,7 +128,7 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
               type="button"
               onClick={() => onSelect(city.key)}
               aria-pressed={isSelected}
-              aria-label={`${city.name}: ${count} people`}
+              aria-label={t('map.cityPeople', { city: cityLabel(city.name, lang), n: count })}
               className={cn('group absolute -translate-x-1/2 -translate-y-1/2', isSelected ? 'z-40' : city.major ? 'z-30' : count ? 'z-20' : 'z-10')}
               style={at(city.lat, city.lng)}
             >
@@ -156,7 +159,7 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
                   isSelected && 'block',
                 )}
               >
-                {city.name}
+                {cityLabel(city.name, lang)}
               </span>
             </button>
           )
@@ -165,18 +168,18 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
 
       <div className="flex flex-wrap items-center gap-x-[14px] gap-y-[6px]">
         {[
-          ['size-[16px] rounded-[4px] border-2 border-white bg-ink outline outline-ink', 'PEOPLE IN CITY'],
-          ['size-[16px] rounded-[4px] border-2 border-ink bg-yellow', 'SELECTED'],
-          ['size-[10px] border-2 border-ink bg-white', 'CITY'],
-          ['size-[12px] border-2 border-ink bg-yellow', 'CAPITAL'],
-          ['size-[16px] rounded-[4px] border-2 border-ink bg-sea', 'RIVERS & LAKES'],
+          ['size-[16px] rounded-[4px] border-2 border-white bg-ink outline outline-ink', t('map.legend.people')],
+          ['size-[16px] rounded-[4px] border-2 border-ink bg-yellow', t('map.legend.selected')],
+          ['size-[10px] border-2 border-ink bg-white', t('map.legend.city')],
+          ['size-[12px] border-2 border-ink bg-yellow', t('map.legend.capital')],
+          ['size-[16px] rounded-[4px] border-2 border-ink bg-sea', t('map.legend.water')],
         ].map(([swatch, text]) => (
           <span key={text} className="flex items-center gap-[6px]">
             <span className={swatch} />
             <span className="font-body text-[12px] font-bold tracking-[0.72px] text-ink">{text}</span>
           </span>
         ))}
-        {elsewhere > 0 && <span className="font-body text-[12px] text-ink-soft">+{elsewhere} in other places</span>}
+        {elsewhere > 0 && <span className="font-body text-[12px] text-ink-soft">{t('map.elsewhere', { n: elsewhere })}</span>}
       </div>
     </section>
   )
