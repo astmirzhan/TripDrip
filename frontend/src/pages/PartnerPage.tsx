@@ -23,9 +23,10 @@ const guestIdFrom = (raw: string) => {
 }
 
 function BranchPicker({ locations, value, onChange }: { locations: PartnerLocation[]; value: string; onChange: (id: string) => void }) {
+  const { t } = useI18n()
   return (
     <div className="flex flex-col gap-[8px]">
-      <p className="label text-ink">BRANCH</p>
+      <p className="label text-ink">{t('pt.branch')}</p>
       <div className="flex flex-wrap gap-[6px]">
         {locations.map((l) => (
           <Chip key={l.id} selected={value === l.id} onClick={() => onChange(l.id)}>
