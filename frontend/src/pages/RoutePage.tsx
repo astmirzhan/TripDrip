@@ -15,31 +15,34 @@ import { VerifyGate } from '../components/VerifyGate'
 import { CITIES, CITY_CENTER, titleCase } from '../lib/data'
 import { RouteBoard } from './route/RouteBoard'
 import { stopState } from './route/stops'
+import { useI18n, type T } from '../i18n'
+import { cityLabel } from '../lib/places'
 
 const DEMO_CHECKIN = import.meta.env.VITE_DEMO_CHECKIN === 'true'
 
-function currentPosition(stop: RouteStop): Promise<{ lat: number; lng: number }> {
+function currentPosition(stop: RouteStop, t: T): Promise<{ lat: number; lng: number }> {
   if (DEMO_CHECKIN) return Promise.resolve({ lat: stop.lat, lng: stop.lng })
   return new Promise((resolve, reject) => {
     if (!('geolocation' in navigator)) {
-      reject(new Error('This device has no location access.'))
+      reject(new Error(t('route.noGeo')))
       return
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => reject(new Error('Allow location access to check in at the stop.')),
+      () => reject(new Error(t('route.allowGeo'))),
       { enableHighAccuracy: true, timeout: 10_000 },
     )
   })
 }
 
 function CoinRules({ balance }: { balance: number }) {
+  const { t } = useI18n()
   return (
     <div className="flex items-center gap-[12px] rounded-[12px] border-3 border-ink bg-cream p-[14px]">
       <CoinBalance value={balance} />
       <div className="flex flex-col gap-[2px] font-body text-[18px] font-bold text-ink">
-        <p>50 coins = 10% off</p>
-        <p>100 coins = 20% off</p>
+        <p>{t('route.rule50')}</p>
+        <p>{t('route.rule100')}</p>
       </div>
     </div>
   )
@@ -50,6 +53,7 @@ function NewRoutePanel({ balance }: { balance: number }) {
   const generate = useGenerateRoute()
   const [city, setCity] = useState(titleCase(user?.city ?? 'Almaty'))
   const [vibe, setVibe] = useState<Vibe>(user?.vibe_preference ?? 'both')
+  const { t, lang } = useI18n()
 
   function start() {
     const center = CITY_CENTER[city.toLowerCase()] ?? CITY_CENTER.almaty
@@ -65,29 +69,29 @@ function NewRoutePanel({ balance }: { balance: number }) {
 
   return (
     <Panel className="h-fit w-full gap-[14px] p-[24px] lg:w-[440px]">
-      <Eyebrow>NEW ROUTE</Eyebrow>
-      <h1 className="font-display text-[44px] leading-none text-ink">where to today?</h1>
-      <p className="font-body text-[20px] text-ink-soft">3–5 stops picked for you, away from the crowds. Coins at every stop.</p>
+      <Eyebrow>{t('route.new')}</Eyebrow>
+      <h1 className="font-display text-[44px] leading-none text-ink">{t('route.whereTo')}</h1>
+      <p className="font-body text-[20px] text-ink-soft">{t('route.intro')}</p>
       <div className="flex flex-wrap gap-[8px]">
         {CITIES.slice(0, 6).map((c) => (
           <Chip key={c} selected={city === c} onClick={() => setCity(c)}>
-            {c.toUpperCase()}
+            {cityLabel(c, lang).toUpperCase()}
           </Chip>
         ))}
       </div>
       <div className="flex flex-wrap gap-[8px]">
         {(['nature', 'megapolis', 'both'] as const).map((v) => (
           <Chip key={v} selected={vibe === v} onClick={() => setVibe(v)}>
-            {v === 'megapolis' ? 'METROPOLIS' : v.toUpperCase()}
+            {t(`route.vibe.${v}`)}
           </Chip>
         ))}
       </div>
       {generate.error && <Notice>{errorMessage(generate.error)}</Notice>}
       <Button className="self-start" onClick={start} loading={generate.isPending}>
-        get route
+        {t('home.getRoute')}
       </Button>
       <CoinRules balance={balance} />
-      <p className="font-body text-[16px] text-ink-soft">Coins are loyalty points: no buying, no cash-out.</p>
+      <p className="font-body text-[16px] text-ink-soft">{t('route.loyalty')}</p>
     </Panel>
   )
 }
@@ -96,6 +100,7 @@ function StopPanel({ route, balance }: { route: Route; balance: number }) {
   const navigate = useNavigate()
   const checkin = useCheckin()
   const [error, setError] = useState('')
+  const { t, lang } = useI18n()
   const index = route.stops.findIndex((s) => !s.is_visited)
   const stop = route.stops[index]
   if (!stop) return null
@@ -103,7 +108,7 @@ function StopPanel({ route, balance }: { route: Route; balance: number }) {
   async function collect() {
     setError('')
     try {
-      const pos = await currentPosition(stop)
+      const pos = await currentPosition(stop, t)
       const result = await checkin.mutateAsync({ routeId: route.id, pointId: stop.point_id, ...pos })
       if (result.route_completed) {
         navigate('/route/complete', {
@@ -122,25 +127,25 @@ function StopPanel({ route, balance }: { route: Route; balance: number }) {
 
   return (
     <Panel className="h-fit w-full gap-[14px] p-[24px] lg:w-[440px]">
-      <Eyebrow>STOP OF THE DAY</Eyebrow>
+      <Eyebrow>{t('route.stopOfDay')}</Eyebrow>
       <p className="label self-start rounded-[8px] border-3 border-ink bg-ink p-[6px] text-yellow">
-        +{stop.reward_coins} COINS · {route.city.toUpperCase()} ROUTE
+        {t('route.reward', { n: stop.reward_coins, city: cityLabel(route.city, lang) })}
       </p>
       <h1 className="font-display text-[44px] leading-none text-ink">
-        Stop {index + 1} · {stop.name}
+        {t('route.stopN', { n: index + 1, name: stop.name })}
       </h1>
       <p className="font-body text-[20px] text-ink-soft">
-        {stop.description ?? `Get within ${stop.radius_meters} m, then collect the coins.`}
+        {stop.description ?? t('route.getWithin', { m: stop.radius_meters })}
       </p>
       {error && <Notice>{error}</Notice>}
       <Button className="self-start" onClick={collect} loading={checkin.isPending}>
-        collect +{stop.reward_coins}
+        {t('route.collect', { n: stop.reward_coins })}
       </Button>
       <CoinRules balance={balance} />
       <ButtonLink to="/route/complete" variant="secondary" className="self-start">
-        open wallet
+        {t('route.openWallet')}
       </ButtonLink>
-      <p className="font-body text-[16px] text-ink-soft">Coins are loyalty points: no buying, no cash-out.</p>
+      <p className="font-body text-[16px] text-ink-soft">{t('route.loyalty')}</p>
     </Panel>
   )
 }

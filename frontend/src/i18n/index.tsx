@@ -3,14 +3,10 @@ import { en, type Dict } from './en'
 import { kk } from './kk'
 import { ru } from './ru'
 
-export type Lang = 'en' | 'ru' | 'kk'
-export type TKey = keyof Dict
+import type { Lang } from './langs'
 
-export const LANGS: Array<{ value: Lang; label: string; short: string }> = [
-  { value: 'en', label: 'English', short: 'EN' },
-  { value: 'ru', label: 'Русский', short: 'RU' },
-  { value: 'kk', label: 'Қазақша', short: 'ҚАЗ' },
-]
+export type { Lang } from './langs'
+export type TKey = keyof Dict
 
 const DICTS: Record<Lang, Dict> = { en, ru, kk }
 const STORAGE_KEY = 'tripdrip.lang'

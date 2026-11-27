@@ -35,8 +35,17 @@ export function cityLabel(city: string, lang: Lang): string {
   return entry[lang]
 }
 
+// Some browsers ship no Kazakh country names, so the common ones are listed here.
+const COUNTRY_KK: Record<string, string> = {
+  KZ: 'Қазақстан', RU: 'Ресей', CN: 'Қытай', UZ: 'Өзбекстан', KG: 'Қырғызстан', TM: 'Түрікменстан',
+  US: 'АҚШ', GB: 'Ұлыбритания', FR: 'Франция', DE: 'Германия', JP: 'Жапония', KR: 'Оңтүстік Корея',
+  IT: 'Италия', ES: 'Испания', TR: 'Түркия', IN: 'Үндістан', NL: 'Нидерланд', PL: 'Польша',
+  AE: 'БАӘ', CA: 'Канада', AU: 'Австралия', BR: 'Бразилия',
+}
+
 /** Country name from an ISO code in the current language (built into the browser). */
 export function countryLabel(code: string, lang: Lang): string {
+  if (lang === 'kk' && COUNTRY_KK[code.toUpperCase()]) return COUNTRY_KK[code.toUpperCase()]
   try {
     return new Intl.DisplayNames([lang === 'kk' ? 'kk' : lang], { type: 'region' }).of(code.toUpperCase()) ?? code
   } catch {

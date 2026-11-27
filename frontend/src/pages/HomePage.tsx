@@ -208,7 +208,7 @@ export function HomePage() {
           {verified ? isLocal ? <FeedPreviewCard city={user.city} /> : <MyRequestsCard /> : null}
           {/* Stands on the grass line of the scene, like the Figma frame (x 1250, bottom 124 of 810). */}
           <div className="pointer-events-none fixed right-[46px] bottom-[max(8.611vw,15.31vh)] hidden lg:block">
-            <Sign value={wallet.data?.balance ?? 0} caption="COINS" />
+            <Sign value={wallet.data?.balance ?? 0} caption={t('wallet.coins').toUpperCase()} />
           </div>
         </div>
 

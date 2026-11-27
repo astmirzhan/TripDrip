@@ -1,4 +1,5 @@
-import { LANGS, useI18n } from '../i18n'
+import { useI18n } from '../i18n'
+import { LANGS } from '../i18n/langs'
 import { cn } from '../lib/cn'
 
 /** EN / RU / ҚАЗ switch; the choice is saved on this device. */
