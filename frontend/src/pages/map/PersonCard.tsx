@@ -60,7 +60,7 @@ export function PersonCard({ person, cityCount, onBack }: { person: MapPerson; c
         </div>
       </div>
       <div className="flex gap-[8px]">
-        <Stat value={Number(person.rating_avg || 0).toFixed(1)} label="RATING" />
+        <Stat value={person.rating_count > 0 ? Number(person.rating_avg).toFixed(1) : 'NEW'} label="RATING" />
         <Stat
           value={person.qonaq_completed_count}
           label={

@@ -126,7 +126,7 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
               onClick={() => onSelect(city.key)}
               aria-pressed={isSelected}
               aria-label={`${city.name}: ${count} people`}
-              className={cn('group absolute -translate-x-1/2 -translate-y-1/2', isSelected || count ? 'z-20' : 'z-10')}
+              className={cn('group absolute -translate-x-1/2 -translate-y-1/2', isSelected ? 'z-40' : city.major ? 'z-30' : count ? 'z-20' : 'z-10')}
               style={at(city.lat, city.lng)}
             >
               {count > 0 || isSelected ? (
@@ -134,7 +134,7 @@ export function KazakhstanMap({ counts, selected, onSelect }: { counts: Record<s
                   className={cn(
                     'flex items-center justify-center rounded-[6px] border-3 font-display leading-none shadow-[0_3px_0_0_#2e1b5b]',
                     isSelected ? 'border-ink bg-yellow text-ink' : 'border-white bg-ink text-yellow',
-                    city.major ? 'size-[22px] text-[16px] sm:size-[30px] sm:text-[22px]' : 'size-[20px] text-[14px] sm:size-[26px] sm:text-[19px]',
+                    city.major ? 'size-[22px] text-[16px] sm:size-[30px] sm:text-[22px]' : 'size-[18px] border-2! text-[12px] sm:size-[22px] sm:text-[15px]',
                   )}
                 >
                   {count}

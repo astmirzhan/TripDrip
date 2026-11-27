@@ -28,6 +28,15 @@ var cityCentroids = map[string]Coord{
 	"oskemen":   {Lat: 49.948300, Lng: 82.628500},
 	"taraz":     {Lat: 42.900000, Lng: 71.366700},
 	"semey":     {Lat: 50.411100, Lng: 80.227500},
+	"kostanay":    {Lat: 53.214400, Lng: 63.624600},
+	"kyzylorda":   {Lat: 44.852800, Lng: 65.509200},
+	"oral":        {Lat: 51.227100, Lng: 51.367300},
+	"petropavl":   {Lat: 54.872800, Lng: 69.143000},
+	"taldykorgan": {Lat: 45.017100, Lng: 78.373300},
+	"kokshetau":   {Lat: 53.283300, Lng: 69.396400},
+	"zhezkazgan":  {Lat: 47.804300, Lng: 67.713900},
+	"konaev":      {Lat: 43.866700, Lng: 77.063100},
+	"baikonur":    {Lat: 45.616700, Lng: 63.316700},
 }
 
 var districtCentroids = map[string]Coord{
@@ -99,6 +108,18 @@ func normalizeGeoKey(s string) string {
 		"сарыаркинский":       "saryarka",
 		"байконур":            "baikonur",
 		"нура":                "nura",
+		"костанай":            "kostanay",
+		"кызылорда":           "kyzylorda",
+		"уральск":             "oral",
+		"uralsk":              "oral",
+		"петропавловск":       "petropavl",
+		"petropavlovsk":       "petropavl",
+		"талдыкорган":         "taldykorgan",
+		"кокшетау":            "kokshetau",
+		"жезказган":           "zhezkazgan",
+		"конаев":              "konaev",
+		"капчагай":            "konaev",
+		"kapchagay":           "konaev",
 	}
 	if mapped, ok := aliases[s]; ok {
 		return mapped
