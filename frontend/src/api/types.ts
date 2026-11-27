@@ -423,6 +423,14 @@ export interface PartnerStats {
   by_country: Array<{ country_code: string; redeemed_count: number }>
 }
 
+export interface BlockedUser {
+  blocked_id: string
+  created_at: string
+  first_name: string
+  last_name: string
+  avatar_url: string | null
+}
+
 export interface Items<T> {
   items: T[]
 }
