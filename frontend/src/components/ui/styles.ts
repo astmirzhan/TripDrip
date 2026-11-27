@@ -5,8 +5,8 @@ export type Variant = 'primary' | 'secondary'
 // UI/Button (Figma 32:564 / 32:566): 4px ink border, 12px radius, 6px ink drop shadow, Jersey 10 30px.
 export const buttonClass = (variant: Variant = 'primary', className?: string) =>
   cn(
-    'relative inline-flex shrink-0 items-center justify-center rounded-[12px] border-4 border-ink px-[36px] pt-[10px] pb-[12px]',
-    'font-display text-[30px] leading-none whitespace-nowrap text-ink shadow-button transition-[transform,box-shadow] duration-75',
+    'relative inline-flex max-w-full shrink-0 items-center justify-center rounded-[12px] border-4 border-ink px-[24px] pt-[10px] pb-[12px] sm:px-[36px]',
+    'text-center font-display text-[30px] leading-none text-ink sm:whitespace-nowrap shadow-button transition-[transform,box-shadow] duration-75',
     'enabled:active:translate-y-[4px] enabled:active:shadow-button-pressed disabled:opacity-60',
     variant === 'primary' ? 'bg-yellow' : 'bg-white',
     className,

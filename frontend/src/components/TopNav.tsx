@@ -2,7 +2,6 @@ import { Link, NavLink } from 'react-router-dom'
 import { useWallet } from '../api/hooks'
 import baiterek from '../assets/figma/baiterek.svg'
 import { useAuth } from '../auth/AuthContext'
-import { cn } from '../lib/cn'
 import { avatarFor } from '../lib/avatar'
 import { Avatar } from './ui/Avatar'
 import { chipClass } from './ui/styles'
@@ -42,7 +41,7 @@ export function TopNav() {
           <img src={baiterek} alt="" className="h-[47px] w-[14.56px]" />
           <span className="font-display text-[40px] leading-none text-ink">TripDrip</span>
         </Link>
-        <nav aria-label={t('nav.main')} className="order-last flex w-full gap-[14px] overflow-x-auto pb-[2px] lg:order-none lg:w-auto lg:overflow-visible lg:pb-0">
+        <nav aria-label={t('nav.main')} className="order-last flex w-full flex-wrap gap-[8px] sm:gap-[14px] lg:order-none lg:w-auto">
           {links.map((link) => (
             <NavLink key={link.to} to={link.to} className={({ isActive }) => chipClass(isActive, link.cyr)}>
               {t(link.label)}
@@ -50,7 +49,7 @@ export function TopNav() {
           ))}
         </nav>
       </div>
-      <div className="flex items-center gap-[12px]">
+      <div className="flex flex-wrap items-center gap-[8px] sm:gap-[12px]">
         <LanguageSwitch />
       {user && (
         <>
@@ -59,7 +58,9 @@ export function TopNav() {
               <CoinBalance value={wallet.data?.balance ?? 0} />
             </Link>
           )}
-          <span className={cn(chipClass(false), 'hidden sm:inline-flex')}>{t(ROLE_LABEL[user.role])}</span>
+          <span className="hidden sm:block">
+            <span className={chipClass(false)}>{t(ROLE_LABEL[user.role])}</span>
+          </span>
           <Link to="/profile" aria-label={t('nav.profile')}>
             <Avatar variant={avatarFor(user.id)} size={48} />
           </Link>
