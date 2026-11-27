@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth/AuthContext'
+import { AssistantPage } from './pages/AssistantPage'
 import { ChatsPage } from './pages/ChatsPage'
 import { HomePage } from './pages/HomePage'
 import { MapPage } from './pages/MapPage'
@@ -52,6 +53,7 @@ export function App() {
             <Route path="/home" element={<RequireAuth><HomeOrCabinet /></RequireAuth>} />
             <Route path="/partner" element={<RequireAuth><PartnerPage /></RequireAuth>} />
             <Route path="/phrasebook" element={<PhrasebookPage />} />
+            <Route path="/assistant" element={<AssistantPage />} />
             <Route path="/phrasebook/:phraseId" element={<ShowToLocalPage />} />
             <Route path="/qonaq" element={<RequireAuth><QonaqPage /></RequireAuth>} />
             <Route path="/map" element={<RequireAuth><MapPage /></RequireAuth>} />
