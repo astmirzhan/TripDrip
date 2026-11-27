@@ -37,10 +37,11 @@ Demo accounts (password `TripDrip2026!`): `emma.us@demo.tripdrip` (guest), `arma
 | `/phrasebook/:id` | 07 Show to a local | offline |
 | `/qonaq` (guest) | 08 Қонақ request | `POST /qonaq/requests` |
 | `/qonaq` (local) | 09 Лента Қонақ | `GET /qonaq/feed`, `POST /qonaq/requests/{id}/respond` |
+| `/partner` | 14 Partner cabinet | `/partner/profile`, `/partner/stats`, `/partner/promocodes/redeem`, `/partner/visits/confirm`, `/partner/offers` |
 | `/chats`, `/chats/:id` | 13 Chats | `GET /chats`, `/chats/{id}/messages`, `/network-requests` (accept / decline) |
 | `/map` | 10 Map, 10b Person card | `GET /map/entities`, `PATCH /me/map-presence`, `/network-requests`, `/reports`, `/blocks` |
 | `/route` | 11 Route & coins | `POST /routes/generate`, `GET /routes/active`, check-in |
-| `/route/complete` | 12 Route complete | `/promocodes/me`, `/offers`, exchange |
+| `/route/complete` | 12 Route complete, wallet | `/promocodes/me`, `/offers`, exchange; guest card QR for partner visits |
 
 ## Structure
 

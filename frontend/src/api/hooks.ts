@@ -19,6 +19,9 @@ import type {
   NetworkRequest,
   NetworkRequestRow,
   Offer,
+  PartnerOffer,
+  PartnerProfile,
+  PartnerStats,
   ProfileUpdate,
   PromoCode,
   Route,
@@ -42,6 +45,7 @@ export const keys = {
   chats: ['chats'] as const,
   messages: (id: string) => ['chats', id, 'messages'] as const,
   network: ['network-requests'] as const,
+  partner: ['partner'] as const,
 }
 
 /** Returns null instead of throwing when the backend answers 404 (no record yet). */
@@ -325,6 +329,66 @@ export function useExchangeOffer() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: keys.promos })
       qc.invalidateQueries({ queryKey: keys.wallet })
+    },
+  })
+}
+
+export function usePartnerProfile(enabled = true) {
+  return useQuery({
+    queryKey: [...keys.partner, 'profile'],
+    queryFn: () => api<PartnerProfile>('/partner/profile'),
+    enabled,
+    retry: false,
+  })
+}
+
+export function usePartnerStats(enabled = true) {
+  return useQuery({
+    queryKey: [...keys.partner, 'stats'],
+    queryFn: () => api<PartnerStats>('/partner/stats'),
+    enabled,
+    refetchInterval: 20_000,
+  })
+}
+
+/** Map point ids per branch: the cashier needs them to confirm a visit. */
+export function usePartnerPoints(partnerId: string | undefined) {
+  return useQuery({
+    queryKey: [...keys.partner, 'points', partnerId ?? ''],
+    queryFn: () =>
+      api<MapEntities>('/map/entities', { query: { layer: 'partners' } }).then((r) =>
+        Object.fromEntries(r.partners.filter((p) => p.partner_id === partnerId).map((p) => [p.location_id, p.point_id])),
+      ),
+    enabled: !!partnerId,
+  })
+}
+
+export function useRedeemPromo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { code: string; location_id: string }) =>
+      api<PromoCode>('/partner/promocodes/redeem', { method: 'POST', body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.partner }),
+  })
+}
+
+export function useConfirmVisit() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { user_id: string; location_id: string; point_id: string }) =>
+      api<{ checkin_id: string; coins_awarded: number; new_balance: number }>('/partner/visits/confirm', { method: 'POST', body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.partner }),
+  })
+}
+
+export function useCreateOffer() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { title: string; description?: string; discount_percent: number; coin_cost: number; total_limit: number }) =>
+      api<PartnerOffer>('/partner/offers', { method: 'POST', body }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.partner })
+      qc.invalidateQueries({ queryKey: keys.offers })
     },
   })
 }

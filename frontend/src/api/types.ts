@@ -374,6 +374,55 @@ export interface Message {
   created_at: string
 }
 
+export interface Partner {
+  id: string
+  owner_user_id: string
+  brand_name: string
+  category: string
+  bin: string
+  logo_url: string | null
+  is_approved: boolean
+  created_at: string
+}
+
+export interface PartnerLocation {
+  id: string
+  partner_id: string
+  branch_name: string
+  city: string
+  address: string
+  lat: number
+  lng: number
+  is_active: boolean
+  created_at: string
+}
+
+export interface PartnerOffer {
+  id: string
+  partner_id: string
+  title: string
+  description: string | null
+  discount_percent: number
+  coin_cost: number
+  total_limit: number
+  remaining_limit: number
+  is_active: boolean
+  created_at: string
+}
+
+export interface PartnerProfile {
+  partner: Partner
+  locations: PartnerLocation[]
+  offers: PartnerOffer[]
+}
+
+export interface PartnerStats {
+  total_redeemed: number
+  total_visits: number
+  by_location: Array<{ location_id: string; branch_name: string; city: string; redeemed_count: number }>
+  by_country: Array<{ country_code: string; redeemed_count: number }>
+}
+
 export interface Items<T> {
   items: T[]
 }

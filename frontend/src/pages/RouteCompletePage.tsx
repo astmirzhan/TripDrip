@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { errorMessage } from '../api/client'
 import { useExchangeOffer, useMyPromoCodes, useOffers, useWallet } from '../api/hooks'
 import type { MyPromoCode } from '../api/types'
+import { useAuth } from '../auth/AuthContext'
 import { SceneScreen } from '../components/Layout'
 import { Button, ButtonLink } from '../components/ui/Button'
 import { Chip } from '../components/ui/Chip'
@@ -43,6 +44,32 @@ function PromoBox({ promo }: { promo: MyPromoCode }) {
   )
 }
 
+function GuestCard({ userId, name }: { userId: string; name: string }) {
+  const [show, setShow] = useState(false)
+  const value = `tripdrip:guest:${userId}`
+  return (
+    <div className="flex w-full flex-col gap-[8px] rounded-[12px] border-3 border-ink bg-cream p-[14px]">
+      <div className="flex items-center justify-between gap-[8px]">
+        <Eyebrow>YOUR TRIPDRIP CARD</Eyebrow>
+        <Chip selected={show} onClick={() => setShow((v) => !v)}>
+          {show ? 'HIDE' : 'SHOW AT THE COUNTER'}
+        </Chip>
+      </div>
+      {show ? (
+        <div className="flex items-center gap-[14px]">
+          <QRCodeSVG value={value} size={120} bgColor="#fff6d6" fgColor="#2e1b5b" level="M" className="shrink-0" />
+          <div className="flex min-w-0 flex-col gap-[4px]">
+            <p className="font-display text-[28px] leading-none text-ink">{name}</p>
+            <p className="font-body text-[15px] text-ink-soft">Partner scans it to confirm your visit: +20 coins, once a day per brand.</p>
+          </div>
+        </div>
+      ) : (
+        <p className="font-body text-[15px] text-ink-soft">At a partner café or shop without a promo code? Show this card and get +20 coins.</p>
+      )}
+    </div>
+  )
+}
+
 function OfferPicker({ balance }: { balance: number }) {
   const offers = useOffers()
   const exchange = useExchangeOffer()
@@ -76,7 +103,8 @@ export function RouteCompletePage() {
   const promos = useMyPromoCodes()
   const [shared, setShared] = useState('')
   const balance = wallet.data?.balance ?? 0
-  const promo = (promos.data ?? []).find((p) => p.status === 'active')
+  const { user } = useAuth()
+  const active = (promos.data ?? []).filter((p) => p.status === 'active')
 
   async function share() {
     const text = state
@@ -118,7 +146,11 @@ export function RouteCompletePage() {
           </Eyebrow>
         )}
         <Sign value={state ? `+${state.bonus}` : balance} caption={state ? 'BONUS COINS' : 'COINS'} scale={1.6} />
-        {promo ? <PromoBox promo={promo} /> : <OfferPicker balance={balance} />}
+        {active.map((p) => (
+          <PromoBox key={p.id} promo={p} />
+        ))}
+        <OfferPicker balance={balance} />
+        {user && <GuestCard userId={user.id} name={user.first_name} />}
         {shared && <Notice tone="ok">{shared}</Notice>}
         <div className="flex flex-wrap justify-center gap-[16px]">
           <Button variant="secondary" onClick={share}>
