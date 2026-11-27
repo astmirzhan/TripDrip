@@ -63,6 +63,11 @@ func main() {
 			slog.Error("seeding failed", "err", err)
 			os.Exit(1)
 		}
+		if err := seed.EnsureDemoPeople(ctx, pool); err != nil {
+			cancel()
+			slog.Error("demo people seeding failed", "err", err)
+			os.Exit(1)
+		}
 	}
 	cancel()
 

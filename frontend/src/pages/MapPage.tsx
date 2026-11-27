@@ -37,7 +37,7 @@ function matchesLayer(p: MapPerson, layers: Layer[]) {
 
 function personLine(p: MapPerson) {
   if (p.role === 'local') {
-    return ['local', p.can_host_guests && 'can host', `rated ${Number(p.rating_avg || 0).toFixed(1)}`, p.qonaq_completed_count > 0 && `helped ${p.qonaq_completed_count}×`]
+    return ['local', p.can_host_guests && 'can host', p.rating_count > 0 ? `rated ${Number(p.rating_avg).toFixed(1)}` : 'new', p.qonaq_completed_count > 0 && `helped ${p.qonaq_completed_count}×`]
       .filter(Boolean)
       .join(' · ')
   }

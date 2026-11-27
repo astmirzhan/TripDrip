@@ -44,6 +44,17 @@ export const CITIES = [
   'Oskemen',
   'Taraz',
   'Semey',
+  'Kostanay',
+  'Kyzylorda',
+  'Oral',
+  'Petropavl',
+  'Taldykorgan',
+  'Kokshetau',
+  'Zhezkazgan',
+  'Konaev',
+  'Baikonur',
+  'Kolsay',
+  'Charyn',
 ]
 
 export const CITY_CENTER: Record<string, { lat: number; lng: number }> = {
@@ -60,6 +71,17 @@ export const CITY_CENTER: Record<string, { lat: number; lng: number }> = {
   oskemen: { lat: 49.9483, lng: 82.6285 },
   taraz: { lat: 42.9, lng: 71.3667 },
   semey: { lat: 50.4111, lng: 80.2275 },
+  kostanay: { lat: 53.2144, lng: 63.6246 },
+  kyzylorda: { lat: 44.8528, lng: 65.5092 },
+  oral: { lat: 51.2271, lng: 51.3673 },
+  petropavl: { lat: 54.8728, lng: 69.143 },
+  taldykorgan: { lat: 45.0171, lng: 78.3733 },
+  kokshetau: { lat: 53.2833, lng: 69.3964 },
+  zhezkazgan: { lat: 47.8043, lng: 67.7139 },
+  konaev: { lat: 43.8667, lng: 77.0631 },
+  baikonur: { lat: 45.6167, lng: 63.3167 },
+  kolsay: { lat: 42.9877, lng: 78.3247 },
+  charyn: { lat: 43.3522, lng: 79.0789 },
 }
 
 export const HELP_TYPES: Array<{ value: HelpType; en: string; ru: string; short: string }> = [

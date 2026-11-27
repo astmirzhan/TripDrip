@@ -140,7 +140,7 @@ export function QonaqFeed() {
           </div>
         </div>
         <div className="flex gap-[8px]">
-          <Stat value={Number(user?.rating_avg ?? 0).toFixed(1)} label="РЕЙТИНГ" />
+          <Stat value={user && user.rating_count > 0 ? Number(user.rating_avg).toFixed(1) : '—'} label="РЕЙТИНГ" />
           <Stat value={user?.qonaq_completed_count ?? 0} label="РАЗ ПОМОГ" />
           <Stat value={wallet.data?.balance ?? 0} label="МОНЕТ" dark />
         </div>
