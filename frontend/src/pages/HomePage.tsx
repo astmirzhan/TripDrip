@@ -11,6 +11,7 @@ import { Coin } from '../components/ui/Coin'
 import { Eyebrow, Notice, Panel } from '../components/ui/Panel'
 import { Sign } from '../components/ui/Sign'
 import { helpType, whenLabel } from '../lib/data'
+import { useI18n } from '../i18n'
 
 const MAX_OPEN = 3
 const isOpen = (r: HelpRequest) => r.status === 'open' || r.status === 'has_responses' || r.status === 'matched'
@@ -168,6 +169,7 @@ function RouteCard() {
 // 05 Home (Figma 160:2288).
 export function HomePage() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const wallet = useWallet(!!user?.is_verified)
   const isLocal = user?.role === 'local'
   const verified = !!user?.is_verified
@@ -177,27 +179,27 @@ export function HomePage() {
       <div className="grid grid-cols-1 gap-[24px] lg:grid-cols-[430px_430px_442px] lg:justify-between lg:gap-x-0 lg:gap-y-[46px]">
         <Panel className="justify-between gap-[24px] p-[24px] lg:h-[300px]">
           <div className="flex flex-col gap-[8px]">
-            <Eyebrow>WORKS OFFLINE</Eyebrow>
-            <h2 className="font-display text-[56px] leading-none text-ink">phrasebook</h2>
-            <p className="font-body text-[20px] text-ink">30 phrases for food, roads, hotels and emergencies. No signal needed.</p>
+            <Eyebrow>{t('home.worksOffline')}</Eyebrow>
+            <h2 className="font-display text-[56px] leading-none text-ink">{t('home.phrasebookTitle')}</h2>
+            <p className="font-body text-[20px] text-ink">{t('home.phrasebookText')}</p>
           </div>
           <ButtonLink to="/phrasebook" className="self-start">
-            open phrasebook
+            {t('common.openPhrasebook')}
           </ButtonLink>
         </Panel>
 
         <Panel tone="cream" className="justify-between gap-[24px] p-[24px] lg:h-[300px]">
           <div className="flex flex-col gap-[8px]">
-            <Eyebrow>{isLocal ? 'GUESTS WHO NEED HELP' : 'LOCALS WHO HELP'}</Eyebrow>
+            <Eyebrow>{isLocal ? t('home.guestsNeedHelp') : t('home.localsWhoHelp')}</Eyebrow>
             <h2 className="font-cyr text-[45px] leading-none text-ink">Қонақ</h2>
             <p className="font-body text-[20px] text-ink">
               {isLocal
-                ? 'Accept a request, meet in a public place, earn +30 coins.'
-                : 'Describe what you need. A verified local nearby accepts and a chat opens.'}
+                ? t('home.localText')
+                : t('home.guestText')}
             </p>
           </div>
           <ButtonLink to={verified ? '/qonaq' : '/verify'} className="self-start">
-            {!verified ? 'verify first' : isLocal ? 'open feed' : 'ask a local'}
+            {!verified ? t('home.verifyFirst') : isLocal ? t('home.openFeed') : t('home.askLocal')}
           </ButtonLink>
         </Panel>
 

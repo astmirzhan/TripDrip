@@ -16,6 +16,7 @@ import { ShowToLocalPage } from './pages/ShowToLocalPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { StartPage } from './pages/StartPage'
 import { VerifyPage } from './pages/VerifyPage'
+import { I18nProvider } from './i18n'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } },
@@ -42,6 +43,7 @@ function HomeOrCabinet() {
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <I18nProvider>
       <BrowserRouter>
         <AuthProvider>
           <Routes>
@@ -65,6 +67,7 @@ export function App() {
           </Routes>
         </AuthProvider>
       </BrowserRouter>
+      </I18nProvider>
     </QueryClientProvider>
   )
 }
