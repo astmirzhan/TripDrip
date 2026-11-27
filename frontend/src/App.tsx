@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ChatsPage } from './pages/ChatsPage'
 import { HomePage } from './pages/HomePage'
 import { MapPage } from './pages/MapPage'
+import { PartnerPage } from './pages/PartnerPage'
 import { PhrasebookPage } from './pages/PhrasebookPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { QonaqPage } from './pages/QonaqPage'
@@ -31,6 +32,12 @@ function GuestOnly({ children }: { children: ReactNode }) {
   return isSignedIn ? <Navigate to="/home" replace /> : children
 }
 
+/** Partners land in their cabinet instead of the guest home screen. */
+function HomeOrCabinet() {
+  const { user } = useAuth()
+  return user?.role === 'partner' ? <Navigate to="/partner" replace /> : <HomePage />
+}
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -42,7 +49,8 @@ export function App() {
             <Route path="/login" element={<GuestOnly><SignUpPage mode="login" /></GuestOnly>} />
             <Route path="/verify" element={<RequireAuth><VerifyPage /></RequireAuth>} />
             <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
-            <Route path="/home" element={<RequireAuth><HomePage /></RequireAuth>} />
+            <Route path="/home" element={<RequireAuth><HomeOrCabinet /></RequireAuth>} />
+            <Route path="/partner" element={<RequireAuth><PartnerPage /></RequireAuth>} />
             <Route path="/phrasebook" element={<PhrasebookPage />} />
             <Route path="/phrasebook/:phraseId" element={<ShowToLocalPage />} />
             <Route path="/qonaq" element={<RequireAuth><QonaqPage /></RequireAuth>} />
