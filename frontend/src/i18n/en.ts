@@ -263,6 +263,7 @@ export const en = {
   "pt.activeOffers": "Active offers",
   "pt.allTime": "All time · {brand}",
   "pt.boosted": "Boosted branches show up more often in routes.",
+  "pt.branch": "Branch",
   "pt.branches": "Branches",
   "pt.byBranch": "By branch",
   "pt.byCountry": "Codes by guest country",
