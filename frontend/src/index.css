@@ -28,8 +28,9 @@
   --color-sand: #e9d9a6;
 
   --font-display: 'Jersey 10', 'Tiny5', system-ui, sans-serif;
-  --font-body: 'Pixelify Sans', 'Tiny5', system-ui, sans-serif;
-  --font-cyr: 'Tiny5', 'Pixelify Sans', system-ui, sans-serif;
+  /* Tiny5: pixel font where C and O look different and Cyrillic/Kazakh render in the same style. */
+  --font-body: 'Tiny5', system-ui, sans-serif;
+  --font-cyr: 'Tiny5', system-ui, sans-serif;
 
   --shadow-panel: 0 8px 0 0 #2e1b5b;
   --shadow-card: 0 4px 0 0 #2e1b5b;
@@ -47,6 +48,8 @@
   body {
     margin: 0;
     font-family: var(--font-body);
+    /* Tiny5 has one weight: no blurry fake bold. */
+    font-synthesis-weight: none;
     color: var(--color-ink);
     background: #8fa4e7;
   }
@@ -65,7 +68,7 @@
   }
 }
 
-/* Section label: Pixelify Sans Bold 14 / 1.2, tracking 0.84px, uppercase (K7v2/Label). */
+/* Section label: 14 / 1.2, tracking 0.84px, uppercase (K7v2/Label). */
 @utility label {
   font-family: var(--font-body);
   font-weight: 700;
