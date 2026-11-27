@@ -10,8 +10,8 @@ import { Chip, Tag } from '../components/ui/Chip'
 import { Coin } from '../components/ui/Coin'
 import { Eyebrow, Notice, Panel } from '../components/ui/Panel'
 import { Sign } from '../components/ui/Sign'
-import { helpType, whenLabel } from '../lib/data'
 import { useI18n } from '../i18n'
+import { helpShort, whenText } from '../lib/labels'
 
 const MAX_OPEN = 3
 const isOpen = (r: HelpRequest) => r.status === 'open' || r.status === 'has_responses' || r.status === 'matched'
@@ -20,6 +20,7 @@ function Responders({ request }: { request: HelpRequest }) {
   const navigate = useNavigate()
   const responses = useQonaqResponses(request.id)
   const select = useSelectHost()
+  const { t } = useI18n()
   const accepted = (responses.data ?? []).filter((r) => r.decision === 'accepted')
   if (responses.isPending) return null
   return (
@@ -27,12 +28,12 @@ function Responders({ request }: { request: HelpRequest }) {
       {accepted.map((r) => (
         <div key={r.id} className="flex items-center justify-between gap-[8px] rounded-[10px] border-3 border-ink bg-white px-[12px] py-[6px]">
           <span className="font-body text-[16px] text-ink">
-            {r.first_name} · {r.qonaq_completed_count}× helped
+            {t('home.helped', { name: r.first_name, n: r.qonaq_completed_count })}
           </span>
           <Chip selected onClick={() =>
               select.mutate({ requestId: request.id, localId: r.local_id }, { onSuccess: (res) => navigate(`/chats/${res.chat.id}`) })
             } disabled={select.isPending}>
-            PICK
+            {t('home.pick')}
           </Chip>
         </div>
       ))}
@@ -45,28 +46,29 @@ function RequestRow({ request }: { request: HelpRequest }) {
   const [expanded, setExpanded] = useState(false)
   const responses = useQonaqResponses(request.status === 'has_responses' ? request.id : null)
   const confirm = useConfirmQonaq()
+  const { t, locale } = useI18n()
   const accepted = (responses.data ?? []).filter((r) => r.decision === 'accepted').length
 
-  let chip = <Tag>OPEN</Tag>
+  let chip = <Tag>{t('status.open')}</Tag>
   if (request.status === 'has_responses') {
     chip = (
       <Chip selected onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
-        {accepted || ''} ACCEPTED
+        {t('status.accepted', { n: accepted || '' })}
       </Chip>
     )
   } else if (request.status === 'matched') {
     const confirmed = request.tourist_confirmed_done
     chip = confirmed ? (
-      <Tag>WAITING</Tag>
+      <Tag>{t('status.waiting')}</Tag>
     ) : (
       <Chip selected disabled={confirm.isPending} onClick={() => confirm.mutate(request.id)}>
-        MARK DONE
+        {t('status.markDone')}
       </Chip>
     )
   } else if (request.status === 'completed') {
-    chip = <Tag>DONE</Tag>
+    chip = <Tag>{t('status.done')}</Tag>
   } else if (request.status === 'cancelled' || request.status === 'expired') {
-    chip = <Tag>{request.status.toUpperCase()}</Tag>
+    chip = <Tag>{t(request.status === 'cancelled' ? 'status.cancelled' : 'status.expired')}</Tag>
   }
 
   return (
@@ -75,7 +77,7 @@ function RequestRow({ request }: { request: HelpRequest }) {
         <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
           <p className="truncate font-body text-[18px] font-bold text-ink">{request.description}</p>
           <p className="font-body text-[16px] text-ink-soft">
-            {helpType(request.help_type).short} · {whenLabel(request.needed_at)}
+            {helpShort(t, request.help_type)} · {whenText(t, locale, request.needed_at)}
           </p>
         </div>
         {chip}
@@ -89,23 +91,20 @@ function MyRequestsCard() {
   const requests = useMyQonaqRequests()
   const items = requests.data ?? []
   const openCount = items.filter(isOpen).length
+  const { t } = useI18n()
   return (
     <Panel className="gap-[10px] p-[22px]">
       <div className="flex items-center justify-between gap-[8px]">
-        <p className="label text-leaf">
-          MY <span className="font-cyr">ҚОНАҚ</span> REQUESTS
-        </p>
-        <p className="font-body text-[16px] text-ink-soft">
-          {openCount} of {MAX_OPEN} open
-        </p>
+        <p className="label text-leaf">{t('home.myRequests')}</p>
+        <p className="font-body text-[16px] text-ink-soft">{t('home.openOf', { n: openCount, max: MAX_OPEN })}</p>
       </div>
       {items.slice(0, 3).map((r) => (
         <RequestRow key={r.id} request={r} />
       ))}
-      {requests.isSuccess && items.length === 0 && <p className="font-body text-[16px] text-ink-soft">No requests yet.</p>}
+      {requests.isSuccess && items.length === 0 && <p className="font-body text-[16px] text-ink-soft">{t('home.noRequests')}</p>}
       {requests.error && <Notice>{errorMessage(requests.error)}</Notice>}
       <ButtonLink to="/qonaq" variant="secondary" className="self-start">
-        new request
+        {t('home.newRequest')}
       </ButtonLink>
     </Panel>
   )
@@ -113,24 +112,25 @@ function MyRequestsCard() {
 
 function FeedPreviewCard({ city }: { city: string }) {
   const feed = useQonaqFeed(city)
+  const { t, locale } = useI18n()
   const items = feed.data ?? []
   return (
     <Panel className="gap-[10px] p-[22px]">
       <div className="flex items-center justify-between gap-[8px]">
-        <p className="font-cyr text-[14px] text-leaf">ГОСТИ РЯДОМ</p>
+        <p className="label text-leaf">{t('home.guestsNearby')}</p>
         <p className="font-cyr text-[16px] text-ink-soft">{items.length}</p>
       </div>
       {items.slice(0, 3).map((r) => (
         <div key={r.id} className="flex flex-col gap-[2px] rounded-[10px] border-3 border-ink bg-mist p-[12px]">
           <p className="truncate font-body text-[18px] font-bold text-ink">{r.description}</p>
           <p className="font-cyr text-[16px] text-ink-soft">
-            {r.tourist_first_name} · {helpType(r.help_type).ru.toLowerCase()} · {whenLabel(r.needed_at, 'ru')}
+            {r.tourist_first_name} · {helpShort(t, r.help_type)} · {whenText(t, locale, r.needed_at)}
           </p>
         </div>
       ))}
-      {feed.isSuccess && items.length === 0 && <p className="font-cyr text-[16px] text-ink-soft">Пока нет запросов.</p>}
+      {feed.isSuccess && items.length === 0 && <p className="font-body text-[16px] text-ink-soft">{t('home.noFeed')}</p>}
       <ButtonLink to="/qonaq" variant="secondary" className="self-start">
-        open feed
+        {t('home.openFeed')}
       </ButtonLink>
     </Panel>
   )
@@ -142,16 +142,17 @@ function RouteCard() {
   const stops = r?.stops ?? []
   const visited = stops.filter((s) => s.is_visited)
   const coins = visited.reduce((sum, s) => sum + s.reward_coins, 0)
+  const { t } = useI18n()
 
   return (
     <Panel className="flex-col gap-[20px] p-[22px] sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
-        <Eyebrow>TODAY’S ROUTE</Eyebrow>
+        <Eyebrow>{t('home.todayRoute')}</Eyebrow>
         <p className="truncate font-display text-[36px] leading-none text-ink">
-          {r && stops.length ? `${stops[0].name} to ${stops[stops.length - 1].name}` : 'Pick a vibe and go'}
+          {r && stops.length ? t('home.routeFromTo', { from: stops[0].name, to: stops[stops.length - 1].name }) : t('home.pickVibe')}
         </p>
         <p className="font-body text-[16px] text-ink-soft">
-          {r ? `${visited.length} of ${stops.length} stops · ${coins} coins collected` : '3–5 stops near you, coins at each one'}
+          {r ? t('home.routeProgress', { done: visited.length, total: stops.length, coins }) : t('home.routeHint')}
         </p>
       </div>
       {r && (
@@ -161,7 +162,7 @@ function RouteCard() {
           ))}
         </div>
       )}
-      <ButtonLink to="/route">{r ? 'continue' : 'get route'}</ButtonLink>
+      <ButtonLink to="/route">{r ? t('common.continue') : t('home.getRoute')}</ButtonLink>
     </Panel>
   )
 }

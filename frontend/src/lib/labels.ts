@@ -25,3 +25,16 @@ export function levelName(t: T, code: string) {
   const text = t(key)
   return text === key ? code.toUpperCase() : text
 }
+
+/** "now" / "today" / "3 Dec" in the current language. */
+export function whenText(t: T, locale: string, value: string) {
+  const d = new Date(value)
+  const now = new Date()
+  if ((d.getTime() - now.getTime()) / 60000 < 60) return t('when.now')
+  if (d.toDateString() === now.toDateString()) return t('when.today')
+  return d.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+}
+
+/** Short date like "3 Dec" in the current language. */
+export const dateText = (locale: string, value: string | Date) =>
+  new Date(value).toLocaleDateString(locale, { day: 'numeric', month: 'short' })
