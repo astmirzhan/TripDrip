@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tripdrip/backend/internal/db/sqlc"
 	"github.com/tripdrip/backend/internal/domain"
 	"github.com/tripdrip/backend/internal/transport/http/dto"
@@ -12,10 +14,19 @@ import (
 
 type VerificationService struct {
 	q *sqlc.Queries
+	// autoApprovePool is set in demo mode: submissions are approved right away inside a transaction.
+	autoApprovePool *pgxpool.Pool
 }
 
 func NewVerificationService(q *sqlc.Queries) *VerificationService {
 	return &VerificationService{q: q}
+}
+
+// WithAutoApprove enables demo mode: every valid submission is approved immediately,
+// the user becomes verified and the document photos are cleared, as after a moderator review.
+func (s *VerificationService) WithAutoApprove(pool *pgxpool.Pool) *VerificationService {
+	s.autoApprovePool = pool
+	return s
 }
 
 func (s *VerificationService) Submit(ctx context.Context, userID uuid.UUID, role string, req dto.SubmitVerificationRequest) (*dto.VerificationResponse, error) {
@@ -66,8 +77,35 @@ func (s *VerificationService) Submit(ctx context.Context, userID uuid.UUID, role
 		return nil, domain.Internal(err)
 	}
 
+	if s.autoApprovePool != nil {
+		approved, err := s.approve(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		v = approved
+	}
+
 	res := mapVerification(v)
 	return &res, nil
+}
+
+func (s *VerificationService) approve(ctx context.Context, v sqlc.Verification) (sqlc.Verification, error) {
+	var approved sqlc.Verification
+	err := RunInTx(ctx, s.autoApprovePool, s.q, func(qtx *sqlc.Queries, _ pgx.Tx) error {
+		rev, err := qtx.ReviewVerification(ctx, sqlc.ReviewVerificationParams{
+			ID:     v.ID,
+			Status: sqlc.VerificationStatusEnumApproved,
+		})
+		if err != nil {
+			return domain.Internal(err)
+		}
+		if _, err := qtx.SetUserVerified(ctx, sqlc.SetUserVerifiedParams{ID: v.UserID, IsVerified: true}); err != nil {
+			return domain.Internal(err)
+		}
+		approved = rev
+		return nil
+	})
+	return approved, err
 }
 
 func (s *VerificationService) GetMyStatus(ctx context.Context, userID uuid.UUID) (*dto.VerificationResponse, error) {

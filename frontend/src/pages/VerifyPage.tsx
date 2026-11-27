@@ -1,7 +1,8 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { errorMessage } from '../api/client'
-import { useMyVerification, useSubmitVerification } from '../api/hooks'
+import { keys, useMyVerification, useSubmitVerification } from '../api/hooks'
 import type { Verification } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { SceneScreen } from '../components/Layout'
@@ -77,6 +78,7 @@ const DOT = { done: 'bg-leaf', active: 'bg-yellow', todo: 'bg-white', failed: 'b
 export function VerifyPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const verification = useMyVerification()
   const submit = useSubmitVerification()
   const [docNumber, setDocNumber] = useState('')
@@ -98,12 +100,17 @@ export function VerifyPage() {
     }
     try {
       // The backend stores only references; file storage is out of MVP scope (see idea.md §3.1).
-      await submit.mutateAsync({
+      const result = await submit.mutateAsync({
         doc_type: isLocal ? 'iin' : 'passport',
         doc_number: docNumber.trim(),
         doc_photo_url: `upload://${docPhoto.name}`,
         selfie_url: `upload://${selfie.name}`,
       })
+      if (result.status === 'approved') {
+        // Demo mode on the backend approves right away: refresh the session and go on.
+        await qc.invalidateQueries({ queryKey: keys.me })
+        navigate('/profile')
+      }
     } catch (err) {
       setError(errorMessage(err))
     }

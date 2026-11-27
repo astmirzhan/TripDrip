@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, api } from './client'
 import type {
+  ChatSummary,
   CheckinResult,
+  Chat,
   CreateQonaqRequest,
   Decision,
   FeedItem,
@@ -12,8 +14,10 @@ import type {
   MapEntities,
   MapFilter,
   MapPresence,
+  Message,
   MyPromoCode,
   NetworkRequest,
+  NetworkRequestRow,
   Offer,
   ProfileUpdate,
   PromoCode,
@@ -35,6 +39,9 @@ export const keys = {
   map: (filter: MapFilter) => ['map', filter] as const,
   offers: ['offers'] as const,
   promos: ['promos'] as const,
+  chats: ['chats'] as const,
+  messages: (id: string) => ['chats', id, 'messages'] as const,
+  network: ['network-requests'] as const,
 }
 
 /** Returns null instead of throwing when the backend answers 404 (no record yet). */
@@ -147,8 +154,14 @@ export function useSelectHost() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ requestId, localId }: { requestId: string; localId: string }) =>
-      api<unknown>(`/qonaq/requests/${requestId}/select-host`, { method: 'POST', body: { local_id: localId } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['qonaq'] }),
+      api<{ help_request: HelpRequest; chat: Chat }>(`/qonaq/requests/${requestId}/select-host`, {
+        method: 'POST',
+        body: { local_id: localId },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['qonaq'] })
+      qc.invalidateQueries({ queryKey: keys.chats })
+    },
   })
 }
 
@@ -160,6 +173,13 @@ export function useConfirmQonaq() {
       qc.invalidateQueries({ queryKey: ['qonaq'] })
       qc.invalidateQueries({ queryKey: keys.wallet })
     },
+  })
+}
+
+export function useReviewQonaq() {
+  return useMutation({
+    mutationFn: ({ requestId, rating }: { requestId: string; rating: number }) =>
+      api<unknown>(`/qonaq/requests/${requestId}/reviews`, { method: 'POST', body: { rating } }),
   })
 }
 
@@ -198,9 +218,68 @@ export function useUpdatePresence() {
 }
 
 export function useSendNetworkRequest() {
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: (body: { receiver_id: string; intro_message?: string }) =>
       api<NetworkRequest>('/network-requests', { method: 'POST', body }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.network }),
+  })
+}
+
+export function useNetworkRequests(enabled = true) {
+  return useQuery({
+    queryKey: keys.network,
+    queryFn: () => api<Items<NetworkRequestRow>>('/network-requests').then((r) => r.items),
+    enabled,
+    refetchInterval: 15_000,
+    retry: (count, error) => !isVerifiedGate(error) && count < 2,
+  })
+}
+
+export function useRespondNetwork() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ requestId, decision }: { requestId: string; decision: Exclude<Decision, 'pending'> }) =>
+      api<{ request: NetworkRequest; chat?: Chat }>(`/network-requests/${requestId}/respond`, {
+        method: 'POST',
+        body: { decision },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.network })
+      qc.invalidateQueries({ queryKey: keys.chats })
+    },
+  })
+}
+
+export function useChats(enabled = true) {
+  return useQuery({
+    queryKey: keys.chats,
+    queryFn: () => api<Items<ChatSummary>>('/chats').then((r) => r.items),
+    enabled,
+    refetchInterval: 10_000,
+    retry: (count, error) => !isVerifiedGate(error) && count < 2,
+  })
+}
+
+/** Messages oldest → newest. Polls while the chat is open. */
+export function useMessages(chatId: string | undefined) {
+  return useQuery({
+    queryKey: keys.messages(chatId ?? ''),
+    queryFn: () =>
+      api<Items<Message>>(`/chats/${chatId}/messages`, { query: { limit: 100 } }).then((r) => [...r.items].reverse()),
+    enabled: !!chatId,
+    refetchInterval: 4_000,
+  })
+}
+
+export function useSendMessage(chatId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: string) => api<Message>(`/chats/${chatId}/messages`, { method: 'POST', body: { body } }),
+    onSuccess: (msg) => {
+      qc.setQueryData<Message[]>(keys.messages(chatId), (list) => [...(list ?? []), msg])
+      qc.invalidateQueries({ queryKey: keys.chats })
+    },
   })
 }
 
