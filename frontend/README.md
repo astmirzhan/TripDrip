@@ -35,6 +35,7 @@ Demo accounts (password `TripDrip2026!`): `emma.us@demo.tripdrip` (guest), `arma
 | `/home` | 05 Home | `/qonaq/requests/me`, `/routes/active`, `/wallet` |
 | `/phrasebook` | 06 Phrasebook | offline, bundled data |
 | `/phrasebook/:id` | 07 Show to a local | offline |
+| `/assistant` | 16 Offline mode | offline: local knowledge base with intent search (EN/RU), emergency numbers |
 | `/qonaq` (guest) | 08 Қонақ request | `POST /qonaq/requests` |
 | `/qonaq` (local) | 09 Лента Қонақ | `GET /qonaq/feed`, `POST /qonaq/requests/{id}/respond` |
 | `/partner` | 14 Partner cabinet | `/partner/profile`, `/partner/stats`, `/partner/promocodes/redeem`, `/partner/visits/confirm`, `/partner/offers` |
@@ -42,6 +43,10 @@ Demo accounts (password `TripDrip2026!`): `emma.us@demo.tripdrip` (guest), `arma
 | `/map` | 10 Map, 10b Person card | `GET /map/entities`, `PATCH /me/map-presence`, `/network-requests`, `/reports`, `/blocks` |
 | `/route` | 11 Route & coins | `POST /routes/generate`, `GET /routes/active`, check-in |
 | `/route/complete` | 12 Route complete, wallet | `/promocodes/me`, `/offers`, exchange; guest card QR for partner visits |
+
+## Offline (PWA)
+
+The production build emits `sw.js` (see `precacheServiceWorker` in `vite.config.ts` and `sw/service-worker.js`) with every built file. After the first visit the app opens without a network: phrasebook, show to a local, SOS assistant, wallet codes. API screens show an offline banner. The app can be installed from the browser (`public/manifest.webmanifest`, icons in `public/`).
 
 ## Structure
 

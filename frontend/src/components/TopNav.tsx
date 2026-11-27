@@ -11,6 +11,7 @@ import { CoinBalance } from './ui/Coin'
 const LINKS = [
   { to: '/home', label: 'HOME' },
   { to: '/phrasebook', label: 'PHRASEBOOK' },
+  { to: '/assistant', label: 'SOS' },
   { to: '/qonaq', label: 'ҚОНАҚ', cyr: true },
   { to: '/map', label: 'MAP' },
   { to: '/route', label: 'ROUTE' },
