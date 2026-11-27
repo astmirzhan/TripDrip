@@ -474,3 +474,11 @@ Running with `RUN_SEED=true` (or `--seed-only`) idempotently populates the datab
 - **Automatic KYC Photo Scrubbing**: Document and selfie URLs are deleted (`NULL`) immediately upon admin verification decision; only salted/SHA-256 document hashes remain for duplicate prevention.
 - **No Raw Secrets in VCS**: `.env` is ignored via `.gitignore`; `JWT_SECRET` requires a minimum length of 16 characters at startup.
 - **Double-Spend & Replay Protection**: Wallet updates, promo exchanges, and QR redemptions execute inside database transactions with unique idempotency keys and row-level locking.
+
+---
+
+## Team
+
+- **[astmirzhan](https://github.com/astmirzhan)**: frontend, deployment.
+- **[birxnm](https://github.com/birxnm)**: design in Figma, see [`docs/design.md`](./docs/design.md).
+- **[xJam-byte](https://github.com/xJam-byte)**: backend.
