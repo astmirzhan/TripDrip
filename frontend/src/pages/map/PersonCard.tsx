@@ -10,9 +10,12 @@ import { Button } from '../../components/ui/Button'
 import { Chip, Tag } from '../../components/ui/Chip'
 import { CheckBadge } from '../../components/ui/Icon'
 import { Eyebrow, Notice, Panel } from '../../components/ui/Panel'
-import { countryName, languageLabel, titleCase } from '../../lib/data'
+import { titleCase } from '../../lib/data'
+import { useI18n, type TKey } from '../../i18n'
+import { cityLabel, countryLabel } from '../../lib/places'
+import { hobbyLabel, languageName } from '../../lib/labels'
 
-const REPORT_REASONS = ['ASKED FOR MONEY', 'SPAM', 'RUDE']
+const REPORT_REASONS = ['asked for money', 'spam', 'rude']
 
 function Stat({ value, label }: { value: string | number; label: ReactNode }) {
   return (
@@ -31,19 +34,20 @@ export function PersonCard({ person, cityCount, onBack }: { person: MapPerson; c
   const report = useReport()
   const block = useBlock()
   const [reporting, setReporting] = useState(false)
+  const { t, lang } = useI18n()
   const isLocal = person.role === 'local'
   const canAskForHelp = user?.role === 'tourist' && isLocal
 
   const error = sayHi.error ?? report.error ?? block.error
-  const done = sayHi.isSuccess ? 'Request sent. The chat opens after they accept.' : report.isSuccess ? 'Thanks, a moderator will look at it.' : ''
+  const done = sayHi.isSuccess ? t('map.sent') : report.isSuccess ? t('report.thanks') : ''
 
   return (
     <Panel className="h-fit w-full gap-[12px] p-[18px]">
       <div className="flex items-center justify-between">
         <Chip onClick={onBack}>
-          ← {person.city.toUpperCase()} · {cityCount}
+          ← {cityLabel(person.city, lang).toUpperCase()} · {cityCount}
         </Chip>
-        <Eyebrow>{isLocal ? 'LOCAL' : 'GUEST'}</Eyebrow>
+        <Eyebrow>{isLocal ? t('person.local') : t('person.guest')}</Eyebrow>
       </div>
       <div className="flex items-center gap-[14px]">
         <Avatar variant={avatarFor(person.user_id)} size={80} />
@@ -55,50 +59,46 @@ export function PersonCard({ person, cityCount, onBack }: { person: MapPerson; c
             <CheckBadge size={16} thin />
           </div>
           <p className="font-body text-[16px] text-ink-soft">
-            {titleCase(person.city)} · verified {isLocal ? 'local' : `guest from ${countryName(person.country_code)}`}
+            {titleCase(cityLabel(person.city, lang))} · {isLocal ? t('person.verifiedLocal') : t('person.verifiedGuest', { country: countryLabel(person.country_code, lang) })}
           </p>
         </div>
       </div>
       <div className="flex gap-[8px]">
-        <Stat value={person.rating_count > 0 ? Number(person.rating_avg).toFixed(1) : 'NEW'} label="RATING" />
+        <Stat value={person.rating_count > 0 ? Number(person.rating_avg).toFixed(1) : t('person.new')} label={t('person.rating')} />
         <Stat
           value={person.qonaq_completed_count}
-          label={
-            <>
-              HELPED VIA <span className="font-cyr">ҚОНАҚ</span>
-            </>
-          }
+          label={t('person.helped')}
         />
-        <Stat value={person.country_code} label="COUNTRY" />
+        <Stat value={person.country_code} label={t('person.country')} />
       </div>
       {person.expectations && (
         <div className="flex flex-col gap-[4px] rounded-[10px] border-3 border-ink bg-cream p-[12px]">
-          <Eyebrow>LOOKING FOR</Eyebrow>
+          <Eyebrow>{t('person.lookingFor')}</Eyebrow>
           <p className="font-body text-[16px] text-ink">{person.expectations}</p>
         </div>
       )}
       <div className="flex flex-wrap gap-[6px]">
         {person.languages.map((l) => (
           <Tag key={l.code} selected>
-            {languageLabel(l.code)}
+            {languageName(t, l.code)}
           </Tag>
         ))}
         {person.hobbies.map((h) => (
-          <Tag key={h}>{h}</Tag>
+          <Tag key={h}>{hobbyLabel(t, h)}</Tag>
         ))}
       </div>
       {error && <Notice>{errorMessage(error)}</Notice>}
       {done && <Notice tone="ok">{done}</Notice>}
       <div className="flex flex-wrap gap-[12px]">
         <Button onClick={() => sayHi.mutate({ receiver_id: person.user_id })} loading={sayHi.isPending} disabled={sayHi.isSuccess}>
-          say hi
+          {t('person.sayHi')}
         </Button>
         {canAskForHelp && (
           <Button
             variant="secondary"
             onClick={() => navigate(`/qonaq?target=${person.user_id}&name=${encodeURIComponent(person.first_name)}`)}
           >
-            ask for help
+            {t('person.askHelp')}
           </Button>
         )}
       </div>
@@ -108,21 +108,21 @@ export function PersonCard({ person, cityCount, onBack }: { person: MapPerson; c
             <Chip
               key={reason}
               disabled={report.isPending}
-              onClick={() => report.mutate({ target_user_id: person.user_id, reason: reason.toLowerCase() }, { onSuccess: () => setReporting(false) })}
+              onClick={() => report.mutate({ target_user_id: person.user_id, reason }, { onSuccess: () => setReporting(false) })}
             >
-              {reason}
+              {t(`report.${reason}` as TKey)}
             </Chip>
           ))}
         </div>
       )}
       <div className="flex items-center gap-[16px]">
         <button type="button" className="label text-danger" onClick={() => setReporting((v) => !v)}>
-          REPORT
+          {t('report.report')}
         </button>
         <button type="button" className="label text-danger" disabled={block.isPending} onClick={() => block.mutate(person.user_id, { onSuccess: onBack })}>
-          BLOCK
+          {t('report.block')}
         </button>
-        <p className="flex-1 text-right font-body text-[16px] text-ink-soft">chat opens after they accept</p>
+        <p className="flex-1 text-right font-body text-[16px] text-ink-soft">{t('person.chatAfter')}</p>
       </div>
     </Panel>
   )
