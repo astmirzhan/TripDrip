@@ -30,8 +30,11 @@ export function ShowToLocalPage() {
           {phrase.russian}
         </p>
         <div className="flex flex-wrap justify-center gap-[16px] pt-[10px]">
-          <Button variant="secondary" onClick={() => speak(phrase)}>
-            listen
+          <Button variant="secondary" onClick={() => speak(phrase, 'kk')}>
+            ▶ қазақша
+          </Button>
+          <Button variant="secondary" onClick={() => speak(phrase, 'ru')}>
+            ▶ по-русски
           </Button>
           <Button onClick={() => navigate('/phrasebook')}>close</Button>
         </div>

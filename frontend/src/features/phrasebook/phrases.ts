@@ -73,14 +73,55 @@ export const phraseStore = {
   setFavourites: (ids: string[]) => localStorage.setItem(FAVOURITES_KEY, JSON.stringify(ids)),
 }
 
-/** Reads the phrase aloud with the device voice (works offline when a Russian/Kazakh voice is installed). */
-export function speak(phrase: Phrase) {
+export type SpeakLang = 'kk' | 'ru'
+
+// Kazakh letters a Russian voice cannot read, mapped to the closest sounds.
+const KK_TO_RU: Record<string, string> = {
+  ә: 'э', Ә: 'Э', ғ: 'г', Ғ: 'Г', қ: 'к', Қ: 'К', ң: 'н', Ң: 'Н',
+  ө: 'ё', Ө: 'Ё', ұ: 'у', Ұ: 'У', ү: 'ю', Ү: 'Ю', һ: 'х', Һ: 'Х', і: 'и', І: 'И',
+}
+
+let voices: SpeechSynthesisVoice[] = []
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  const load = () => {
+    voices = speechSynthesis.getVoices()
+  }
+  load()
+  speechSynthesis.addEventListener('voiceschanged', load)
+}
+
+const voiceFor = (prefix: string) => voices.find((v) => v.lang.toLowerCase().replace('_', '-').startsWith(prefix))
+
+/** True when the device has a real Kazakh voice (otherwise Kazakh is read by a Russian voice). */
+export const hasKazakhVoice = () => !!voiceFor('kk')
+
+/**
+ * Reads the phrase aloud with the device voice, offline when the voice is installed.
+ * Kazakh uses a Kazakh voice if the device has one, otherwise a Russian voice with the
+ * Kazakh-only letters replaced, which sounds close enough for a local to understand.
+ */
+export function speak(phrase: Phrase, lang: SpeakLang = 'kk') {
   if (!('speechSynthesis' in window)) return
-  const voices = speechSynthesis.getVoices()
-  const kk = voices.find((v) => v.lang.toLowerCase().startsWith('kk'))
-  const utterance = new SpeechSynthesisUtterance(kk ? phrase.kazakh : phrase.russian)
-  utterance.lang = kk ? kk.lang : 'ru-RU'
-  if (kk) utterance.voice = kk
+  const utterance = new SpeechSynthesisUtterance()
+  if (lang === 'kk') {
+    const kk = voiceFor('kk')
+    if (kk) {
+      utterance.text = phrase.kazakh
+      utterance.voice = kk
+      utterance.lang = kk.lang
+    } else {
+      utterance.text = phrase.kazakh.replace(/[әғқңөұүһіӘҒҚҢӨҰҮҺІ]/g, (ch) => KK_TO_RU[ch] ?? ch)
+      const ru = voiceFor('ru')
+      if (ru) utterance.voice = ru
+      utterance.lang = ru?.lang ?? 'ru-RU'
+      utterance.rate = 0.85
+    }
+  } else {
+    const ru = voiceFor('ru')
+    utterance.text = phrase.russian
+    if (ru) utterance.voice = ru
+    utterance.lang = ru?.lang ?? 'ru-RU'
+  }
   speechSynthesis.cancel()
   speechSynthesis.speak(utterance)
 }

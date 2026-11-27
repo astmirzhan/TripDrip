@@ -27,11 +27,21 @@ function PhraseCard({ phrase, learned, onUse }: { phrase: Phrase; learned: boole
         </Link>
         <Chip
           onClick={() => {
-            speak(phrase)
+            speak(phrase, 'kk')
             onUse()
           }}
+          aria-label="Listen in Kazakh"
         >
-          LISTEN
+          ▶ KZ
+        </Chip>
+        <Chip
+          onClick={() => {
+            speak(phrase, 'ru')
+            onUse()
+          }}
+          aria-label="Listen in Russian"
+        >
+          ▶ RU
         </Chip>
       </div>
     </article>
