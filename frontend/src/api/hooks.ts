@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, api } from './client'
 import type {
+  BlockedUser,
   ChatSummary,
   CheckinResult,
   Chat,
@@ -46,6 +47,7 @@ export const keys = {
   messages: (id: string) => ['chats', id, 'messages'] as const,
   network: ['network-requests'] as const,
   partner: ['partner'] as const,
+  blocks: ['blocks'] as const,
 }
 
 /** Returns null instead of throwing when the backend answers 404 (no record yet). */
@@ -298,7 +300,10 @@ export function useBlock() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (blockedId: string) => api<unknown>('/blocks', { method: 'POST', body: { blocked_id: blockedId } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['map'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['map'] })
+      qc.invalidateQueries({ queryKey: keys.blocks })
+    },
   })
 }
 
@@ -390,5 +395,32 @@ export function useCreateOffer() {
       qc.invalidateQueries({ queryKey: keys.partner })
       qc.invalidateQueries({ queryKey: keys.offers })
     },
+  })
+}
+
+export function useBlocks(enabled = true) {
+  return useQuery({
+    queryKey: keys.blocks,
+    queryFn: () => api<Items<BlockedUser>>('/blocks').then((r) => r.items),
+    enabled,
+  })
+}
+
+export function useUnblock() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (userId: string) => api<unknown>(`/blocks/${userId}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.blocks })
+      qc.invalidateQueries({ queryKey: ['map'] })
+      qc.invalidateQueries({ queryKey: keys.chats })
+    },
+  })
+}
+
+/** Deletes the account for good: documents, profile and map presence go with it. */
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: () => api<unknown>('/me', { method: 'DELETE' }),
   })
 }

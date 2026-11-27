@@ -7,6 +7,7 @@ import baiterek from '../assets/figma/baiterek.svg'
 import natureArt from '../assets/figma/vibe-nature.svg'
 import yurt from '../assets/figma/yurt.svg'
 import { useAuth } from '../auth/AuthContext'
+import { AccountSettings } from '../components/AccountSettings'
 import { SceneScreen } from '../components/Layout'
 import { StepChips } from '../components/StepChips'
 import { Button } from '../components/ui/Button'
@@ -105,7 +106,7 @@ export function ProfilePage() {
   }
 
   return (
-    <SceneScreen sprites={[{ kind: 'baiterek', x: 1300, width: 83.2 }, { kind: 'yurt', x: 30, width: 115.2 }]}>
+    <SceneScreen className="flex-col gap-[28px]" sprites={[{ kind: 'baiterek', x: 1300, width: 83.2 }, { kind: 'yurt', x: 30, width: 115.2 }]}>
       <Panel className="w-full max-w-[1120px] p-[20px] sm:p-[26px]">
         <form onSubmit={save} className="flex flex-col gap-[16px]">
           <h1 className="text-center font-display text-[44px] leading-none text-ink sm:text-[52px]">{isLocal ? 'about you' : 'your trip'}</h1>
@@ -186,6 +187,7 @@ export function ProfilePage() {
           </div>
         </form>
       </Panel>
+      <AccountSettings />
     </SceneScreen>
   )
 }
