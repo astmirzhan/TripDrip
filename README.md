@@ -26,9 +26,13 @@
 
 ## 🎬 Demo video
 
-<!-- Drag the demo video (MP4) into this section while editing on GitHub, then delete this comment. -->
+A one-minute walk through the live app: the people map, asking a local, chat, the phrasebook and the offline SOS assistant.
 
-_Coming soon._
+
+
+https://github.com/user-attachments/assets/a0cb4e92-c1e2-441f-b583-b8dcb349afaa
+
+
 
 ## 🏔️ What it is
 
