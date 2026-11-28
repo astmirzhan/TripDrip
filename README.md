@@ -9,6 +9,7 @@
 <p align="center">
   <a href="https://tripdrip.macintsh.tech"><img src="https://img.shields.io/badge/▶_Open_Live_App-tripdrip.macintsh.tech-ffc803?style=for-the-badge&labelColor=2e1b5b" alt="Open the live app" /></a>
   <img src="https://img.shields.io/badge/Built_for-Órleu_Hack_2026-2e1b5b?style=for-the-badge&labelColor=a6d86a" alt="Built for Órleu Hack 2026" />
+  <a href="https://github.com/astmirzhan/TripDrip/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/astmirzhan/TripDrip/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white" alt="CI status" /></a>
 </p>
 
 <p align="center">
